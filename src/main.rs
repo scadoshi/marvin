@@ -1,38 +1,28 @@
-use dotenvy::dotenv;
-use rig::client::{CompletionClient, ProviderClient};
+mod config;
+use crate::config::Config;
 use rig::completion::Chat;
 use rig::message::{AssistantContent, Message, UserContent};
-use rig::providers::anthropic;
-use rig::providers::anthropic::completion::{
-    CLAUDE_3_5_HAIKU, CLAUDE_3_5_SONNET, CLAUDE_3_7_SONNET, CLAUDE_4_OPUS, CLAUDE_4_SONNET,
-};
 use std::io::stdin;
-
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    dotenv().ok();
-    let preamble = std::env::var("PREAMBLE").expect("PREAMBLE not found");
-    let model_choices = [
-        CLAUDE_3_5_HAIKU,
-        CLAUDE_3_5_SONNET,
-        CLAUDE_3_7_SONNET,
-        CLAUDE_4_SONNET,
-        CLAUDE_4_OPUS,
-    ];
-    let mut model = CLAUDE_3_5_HAIKU;
-    let client = anthropic::Client::from_env();
+    let mut config = Config::from_env();
     let mut chat_history = Vec::<Message>::new();
-    let mut agent = client.agent(model).preamble(preamble.as_str()).build();
+    let mut agent = config.build_agent();
     let width = 100;
-    println!("Your AI Agent ({}) Preamble: {}", model, preamble);
+    println!(
+        "Your AI Agent ({}) Preamble: {}",
+        config.model(),
+        config.preamble()
+    );
     println!("{}", "=".repeat(width));
     println!("Type a message and click enter to submit");
     let mut user_input = String::new();
     loop {
         println!("{}", "=".repeat(width));
         stdin().read_line(&mut user_input)?;
-
-        // exit
+        // ======================================
+        //              /exit
+        // ======================================
         if user_input.trim().contains("/exit") {
             if !chat_history.is_empty() {
                 let exit_prompt = Message::assistant(
@@ -40,38 +30,44 @@ async fn main() -> Result<(), anyhow::Error> {
                 );
                 if let Ok(response) = agent.chat(exit_prompt.clone(), chat_history.clone()).await {
                     println!("{}", "=".repeat(width));
-                    println!("{}: {}", model, response);
+                    println!("{}: {}", config.model(), response);
                     chat_history.push(exit_prompt);
                     chat_history.push(Message::assistant(response));
                 }
             }
             break;
         }
-
-        // switch model
+        // ======================================
+        //              /model
+        // ======================================
         if user_input.trim().contains("/model") {
             println!("{}", "=".repeat(width));
             user_input.clear();
-            println!("Choose a model!");
-            for (i, model) in model_choices.iter().enumerate() {
-                println!("    {}. {}", i, model);
+            println!("Current model: {}. Select a model below", config.model());
+            for (i, model) in config.model_options().iter().enumerate() {
+                println!("{}. {}", i + 1, model);
             }
             println!("{}", "=".repeat(width));
             loop {
-                println!("Make a selection:");
                 stdin().read_line(&mut user_input)?;
-                let Some((_, &selection)) = model_choices
+                let Some(selection) = config
+                    .model_options()
                     .iter()
                     .enumerate()
-                    .find(|(i, _)| user_input.trim().parse::<usize>().is_ok_and(|u| u == *i))
+                    .find(|(i, _)| {
+                        user_input
+                            .trim()
+                            .parse::<usize>()
+                            .is_ok_and(|u| u - 1 == *i)
+                    })
+                    .map(|(_, selection)| selection.to_owned())
                 else {
                     continue;
                 };
-                model = selection;
-                agent = client.agent(model).preamble(preamble.as_str()).build();
-                println!("Model updated to: {}", selection);
                 user_input.clear();
-                println!("{}", "=".repeat(width));
+                config.set_model(selection);
+                agent = config.build_agent();
+                println!("Model updated to: {}", config.model());
                 break;
             }
             continue;
@@ -79,7 +75,9 @@ async fn main() -> Result<(), anyhow::Error> {
 
         const TRUNCATE_AT: usize = 300;
         const HISTORY_LEN: usize = 10;
-        // show history
+        // ======================================
+        //             /history
+        // ======================================
         if user_input.trim().contains("/history") {
             if chat_history.is_empty() {
                 user_input.clear();
@@ -131,14 +129,16 @@ async fn main() -> Result<(), anyhow::Error> {
                 if let Some(final_i) = history_to_show.len().checked_sub(1)
                     && i != final_i
                 {
+                    println!();
                     println!("---");
                 }
                 println!();
             }
             continue;
         }
-
-        // clear chat history
+        // ======================================
+        //              /clear
+        // ======================================
         if user_input.trim() == "/clear" {
             println!("{}", "=".repeat(width));
             println!("Clearing chat history");
@@ -146,20 +146,52 @@ async fn main() -> Result<(), anyhow::Error> {
             user_input.clear();
             continue;
         }
-
-        // help
+        // ======================================
+        //              /help
+        // ======================================
         if user_input.trim() == "/help" {
             user_input.clear();
             println!("{}", "=".repeat(width));
             println!("Commands: ");
             println!("/model - switch models");
             println!("/history - show last {} messages", HISTORY_LEN);
+            println!("/summarize - summarize chat history");
             println!("/clear - clear context");
             println!("/exit - end application");
             continue;
         }
-
-        // regular message
+        // ======================================
+        //          /summarize
+        // ======================================
+        if user_input.trim().contains("/summarize") {
+            user_input.clear();
+            if !chat_history.is_empty() {
+                let summarize_prompt = Message::assistant(
+                    "The user is requesting a summary of the conversation up to this point with the /summary command. Please respond with a brief summary of the conversation",
+                );
+                match agent
+                    .chat(summarize_prompt.clone(), chat_history.clone())
+                    .await
+                {
+                    Ok(response) => {
+                        println!("{}", "=".repeat(width));
+                        println!("{}: {}", config.model(), response);
+                        chat_history.push(summarize_prompt);
+                        chat_history.push(Message::assistant(response));
+                    }
+                    Err(e) => {
+                        eprint!("Error: {}", e);
+                        println!("Please try again.");
+                    }
+                }
+            } else {
+                println!("Nothing to summarize.");
+            }
+            continue;
+        }
+        // ======================================
+        //          regular message
+        // ======================================
         if user_input.trim().is_empty() {
             user_input.clear();
             println!("Type a message and click enter to submit");
@@ -170,7 +202,7 @@ async fn main() -> Result<(), anyhow::Error> {
         match agent.chat(user_message.clone(), chat_history.clone()).await {
             Ok(response) => {
                 println!("{}", "=".repeat(width));
-                println!("{}: {}", model, response);
+                println!("{}: {}", config.model(), response);
                 chat_history.push(user_message);
                 chat_history.push(Message::assistant(response));
             }
