@@ -73,3 +73,51 @@
 - Streaming responses — explore Rig's streaming API for real-time output.
 - Tool use / function calling — if Rig supports it, add tools the agent can call.
 - Export/import chat — save and load conversation history to/from JSON.
+
+## Session 3 — 2026-02-05 (continued)
+
+### What was done
+- Discovered deprecated/retired Anthropic model constants in Rig causing 404 errors.
+- Researched current Anthropic model API status and deprecation timeline.
+- Created GitHub issue #1370 documenting the bug.
+- Fixed Rig's Anthropic model constants to use current versions.
+- Updated 17 files in Rig repository (model constants, examples, tests, documentation).
+- Successfully submitted PR to Rig repository following all contributing guidelines.
+
+### What was learned
+- Anthropic regularly deprecates older model versions (Claude 3.5 Sonnet retired Oct 2025, Claude 3.7 Sonnet deprecated).
+- Current active Anthropic models (Feb 2026): Claude Opus 4.6, Claude Sonnet 4.5, Claude Haiku 4.5.
+- How to contribute to open source: fork workflow, branch naming conventions, conventional commits.
+- Rig's contributing guidelines: conventional commit format, clippy/fmt checks, test requirements.
+- How to search and verify API model availability through official documentation.
+
+### Bug fixed in Rig
+- **Issue**: `CLAUDE_3_5_SONNET` and `CLAUDE_3_7_SONNET` constants pointed to retired/deprecated models.
+- **Impact**: Users got 404 errors when trying to use these models.
+- **Solution**: Updated constants to current model IDs and removed deprecated ones.
+- **PR**: https://github.com/0xPlaygrounds/rig/pull/[number] (Fixes #1370)
+
+### Files changed in Rig
+- `src/providers/anthropic/completion.rs` — updated model constant definitions
+- 14 example files — updated to use new constants
+- 2 source files — updated tests and documentation
+
+### Contributing workflow learned
+1. Fork the repository on GitHub
+2. Create descriptive branch (`fix/update-deprecated-anthropic-models`)
+3. Make focused changes following project conventions
+4. Run required checks (`cargo fmt`, `cargo clippy`, `cargo test`)
+5. Write conventional commit messages with issue reference
+6. Push to fork and create PR with clear description
+
+### Documentation
+- Created organized structure for tracking Rig contributions:
+  - `context/rig_contributions/issues/` - Bug reports and fixes
+  - `context/rig_contributions/enhancements/` - Feature additions
+  - Each with subdirectories: `reported/`, `pr_submitted/`, `pr_approved/`
+- Documented this discovery in `rig_contributions/issues/pr_submitted/anthropic_deprecated_models.md`
+
+### Ideas for next time
+- Continue exploring Rig's streaming API.
+- Monitor PR for feedback from maintainers.
+- Consider other areas in Rig that might need similar updates.
