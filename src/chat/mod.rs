@@ -6,8 +6,8 @@ use rig::{
     completion::Chat,
     message::Message,
     providers::anthropic::completion::{
-        CompletionModel, CLAUDE_3_5_HAIKU, CLAUDE_3_5_SONNET, CLAUDE_3_7_SONNET, CLAUDE_4_OPUS,
-        CLAUDE_4_SONNET,
+        CLAUDE_3_5_HAIKU, CLAUDE_3_5_SONNET, CLAUDE_3_7_SONNET, CLAUDE_4_OPUS, CLAUDE_4_SONNET,
+        CompletionModel,
     },
 };
 use std::io::stdin;
@@ -67,25 +67,27 @@ impl State {
         &mut self,
         message: impl Into<String>,
     ) -> anyhow::Result<String> {
-        Ok(self
+        let message: String = message.into();
+        self.history.push(Message::assistant(&message));
+        let response = self
             .agent
             .chat(Message::assistant(message), self.history().into())
-            .await?)
+            .await?;
+        self.history.push(Message::assistant(&response));
+        Ok(response)
     }
     pub async fn send_user_message(
         &mut self,
         message: impl Into<String>,
     ) -> anyhow::Result<String> {
-        Ok(self
+        let message: String = message.into();
+        self.history.push(Message::user(&message));
+        let response = self
             .agent
             .chat(Message::user(message), self.history().into())
-            .await?)
-    }
-    pub fn record_assistant_message(&mut self, message: impl Into<String>) {
-        self.history.push(Message::assistant(message.into()));
-    }
-    pub fn record_user_message(&mut self, message: impl Into<String>) {
-        self.history.push(Message::user(message.into()));
+            .await?;
+        self.history.push(Message::assistant(&response));
+        Ok(response)
     }
     pub fn history(&self) -> &[Message] {
         self.history.as_slice()

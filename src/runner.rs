@@ -58,8 +58,6 @@ impl Runner {
                         Ok(response) => {
                             horizontal_line();
                             println!("{}: {}", state.model(), response);
-                            state.record_user_message(message);
-                            state.record_assistant_message(response);
                         }
                         Err(e) => {
                             eprintln!("Error: {}", e);

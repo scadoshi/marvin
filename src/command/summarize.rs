@@ -11,8 +11,6 @@ impl AsyncCommand for Summarize {
                 Ok(response) => {
                     horizontal_line();
                     println!("{}: {}", state.model(), response);
-                    state.record_assistant_message(summarize_prompt);
-                    state.record_assistant_message(response);
                 }
                 Err(e) => {
                     eprint!("Error: {}", e);
