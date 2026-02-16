@@ -1,9 +1,11 @@
 use crate::chat::{input::Input, State};
+use crate::command::tokens::Tokens;
 use crate::command::{
     clear::Clear, exit::Exit, help::Help, history::History, model::Model, summarize::Summarize,
     AsyncCommand, Command,
 };
 use crate::ui::horizontal_line;
+use rig::message::Message;
 
 pub struct Runner;
 
@@ -34,6 +36,10 @@ impl Runner {
                     History::execute(&mut state)?;
                     continue;
                 }
+                Input::TokensCommand => {
+                    Tokens::execute(&mut state)?;
+                    continue;
+                }
                 Input::ModelCommand => {
                     Model::execute(&mut state)?;
                     continue;
@@ -48,22 +54,14 @@ impl Runner {
                     break;
                 }
                 Input::Message(message) => {
-                    let message = message.to_owned();
                     if state.input().is_empty() {
                         println!("Type a message and click enter");
+                        state.clear_input();
                         continue;
                     }
+                    let message = message.to_owned();
                     state.clear_input();
-                    match state.send_user_message(message.clone()).await {
-                        Ok(response) => {
-                            horizontal_line();
-                            println!("{}: {}", state.model(), response);
-                        }
-                        Err(e) => {
-                            eprintln!("Error: {}", e);
-                            println!("Please try again");
-                        }
-                    }
+                    state.stream(Message::user(message)).await;
                 }
             }
         }

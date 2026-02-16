@@ -1,24 +1,16 @@
-use crate::{command::AsyncCommand, ui::horizontal_line};
+use crate::command::AsyncCommand;
+use rig::message::Message;
 
 pub struct Summarize;
 
 impl AsyncCommand for Summarize {
     async fn execute(state: &mut crate::chat::State) -> anyhow::Result<()> {
         state.clear_input();
-        if !state.history().is_empty() {
-            let summarize_prompt = "The user is requesting a summary of the conversation up to this point with the /summary command. Please respond with a brief summary of the conversation";
-            match state.send_assistant_message(summarize_prompt).await {
-                Ok(response) => {
-                    horizontal_line();
-                    println!("{}: {}", state.model(), response);
-                }
-                Err(e) => {
-                    eprint!("Error: {}", e);
-                    println!("Please try again");
-                }
-            }
-        } else {
+        if state.history().is_empty() {
             println!("Nothing to summarize");
+        } else {
+            let summarize_prompt = "Summarize our conversation so far in 2-4 sentences. Focus on the key topics discussed and any conclusions reached.";
+            state.stream(Message::user(summarize_prompt)).await;
         }
         Ok(())
     }

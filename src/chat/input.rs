@@ -2,6 +2,7 @@
 pub enum Input {
     ExitCommand,
     HistoryCommand,
+    TokensCommand,
     ClearCommand,
     ModelCommand,
     HelpCommand,
@@ -21,6 +22,8 @@ where
             Self::ExitCommand
         } else if value == "/history" {
             Self::HistoryCommand
+        } else if value == "/tokens" {
+            Self::TokensCommand
         } else if value == "/clear" {
             Self::ClearCommand
         } else if value == "/model" {

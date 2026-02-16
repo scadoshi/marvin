@@ -4,6 +4,7 @@ pub mod help;
 pub mod history;
 pub mod model;
 pub mod summarize;
+pub mod tokens;
 
 use crate::chat;
 

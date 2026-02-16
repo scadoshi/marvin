@@ -1,13 +1,15 @@
 pub mod input;
 
-use crate::{chat::input::Input, config::Config};
+use crate::{chat::input::Input, config::Config, ui::horizontal_line};
+use futures::StreamExt;
 use rig::{
-    agent::Agent,
-    completion::Chat,
+    agent::{Agent, MultiTurnStreamItem},
     message::Message,
-    providers::anthropic::completion::{
-        CompletionModel, CLAUDE_3_5_HAIKU, CLAUDE_4_OPUS, CLAUDE_4_SONNET,
+    providers::anthropic::{
+        completion::{CompletionModel, CLAUDE_3_5_HAIKU, CLAUDE_4_OPUS, CLAUDE_4_SONNET},
+        streaming::{PartialUsage, StreamingCompletionResponse},
     },
+    streaming::{StreamedAssistantContent, StreamingChat},
 };
 use std::io::stdin;
 
@@ -19,6 +21,8 @@ pub struct State {
     agent: Agent<CompletionModel>,
     history: Vec<Message>,
     input: Input,
+    total_input_tokens_used: usize,
+    total_output_tokens_used: usize,
 }
 
 impl State {
@@ -32,15 +36,15 @@ impl State {
         assert!(!model_options.is_empty());
         let model = CLAUDE_3_5_HAIKU.to_string();
         let agent = config.build_agent(&model);
-        let history = Vec::new();
-        let input = Input::new();
         Self {
             config,
             model_options,
             model,
             agent,
-            history,
-            input,
+            history: Vec::new(),
+            input: Input::new(),
+            total_input_tokens_used: 0,
+            total_output_tokens_used: 0,
         }
     }
     pub fn refresh_agent(&mut self) {
@@ -59,37 +63,55 @@ impl State {
         self.model = model.into();
         self
     }
-    pub async fn send_assistant_message(
-        &mut self,
-        message: impl Into<String>,
-    ) -> anyhow::Result<String> {
-        let message: String = message.into();
-        self.history.push(Message::assistant(&message));
-        let response = self
+    pub async fn stream(&mut self, message: impl Into<Message>) {
+        horizontal_line();
+        let message: Message = message.into();
+        self.history.push(message.clone());
+        let mut stream = self
             .agent
-            .chat(Message::assistant(message), self.history().into())
-            .await?;
-        self.history.push(Message::assistant(&response));
-        Ok(response)
-    }
-    pub async fn send_user_message(
-        &mut self,
-        message: impl Into<String>,
-    ) -> anyhow::Result<String> {
-        let message: String = message.into();
-        self.history.push(Message::user(&message));
-        let response = self
-            .agent
-            .chat(Message::user(message), self.history().into())
-            .await?;
-        self.history.push(Message::assistant(&response));
-        Ok(response)
+            .stream_chat(message, self.history().to_owned())
+            .await;
+        while let Some(result) = stream.next().await {
+            match result {
+                Ok(MultiTurnStreamItem::FinalResponse(final_response)) => {
+                    self.history
+                        .push(Message::assistant(final_response.response()));
+                }
+                Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(
+                    text,
+                ))) => {
+                    print!("{}", text.text());
+                }
+                Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Final(
+                    StreamingCompletionResponse {
+                        usage:
+                            PartialUsage {
+                                output_tokens,
+                                input_tokens,
+                            },
+                    },
+                ))) => {
+                    println!();
+                    self.add_output_tokens_used(output_tokens);
+                    if let Some(input_tokens) = input_tokens {
+                        self.add_input_tokens_used(input_tokens);
+                    }
+                }
+                Ok(_) => (),
+                Err(e) => {
+                    eprintln!("Stream Error: {}", e);
+                }
+            }
+        }
     }
     pub fn history(&self) -> &[Message] {
         self.history.as_slice()
     }
     pub fn clear_history(&mut self) {
         self.history.clear();
+    }
+    pub fn add_to_history(&mut self, message: impl Into<Message>) {
+        self.history.push(message.into());
     }
     pub fn input(&self) -> &Input {
         &self.input
@@ -107,5 +129,17 @@ impl State {
     }
     pub fn clear_input(&mut self) {
         self.input.clear();
+    }
+    pub fn total_input_tokens_used(&self) -> usize {
+        self.total_input_tokens_used
+    }
+    pub fn add_input_tokens_used(&mut self, input_tokens: usize) {
+        self.total_input_tokens_used += input_tokens;
+    }
+    pub fn total_output_tokens_used(&self) -> usize {
+        self.total_output_tokens_used
+    }
+    pub fn add_output_tokens_used(&mut self, output_tokens: usize) {
+        self.total_output_tokens_used += output_tokens;
     }
 }

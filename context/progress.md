@@ -121,3 +121,42 @@
 - Continue exploring Rig's streaming API.
 - Monitor PR for feedback from maintainers.
 - Consider other areas in Rig that might need similar updates.
+
+## Session 4 — 2026-02-16
+
+### What was done
+- Implemented streaming responses using Rig's `StreamingChat` trait.
+- Added `futures` crate for `StreamExt` to iterate over async streams.
+- Created unified `stream()` method replacing separate `send_user_message()` and `send_assistant_message()`.
+- Added token tracking: `total_input_tokens_used` and `total_output_tokens_used` fields in `State`.
+- Added `/tokens` command to display cumulative token usage.
+- Updated `/summarize` to use streaming.
+- Refactored main chat loop to use streaming for real-time output.
+
+### What was learned
+- `Stream` is Rust's async equivalent of `Iterator` — lives in `futures-core`.
+- The base `Stream` trait only has `poll_next()` — need `StreamExt` for ergonomic `.next()` method.
+- `StreamExt::next()` returns a `Future<Output = Option<Item>>` — each `.await` yields the next chunk.
+- Streaming vs blocking: `agent.chat().await` waits for entire response; `stream.next().await` yields chunks as they arrive.
+- Rig's streaming response types: `MultiTurnStreamItem::StreamAssistantContent::Text` for chunks, `Final` for usage stats, `FinalResponse` for history.
+
+### futures crate overview
+- `StreamExt`: `.next()`, `.map()`, `.filter()`, `.collect()` for streams
+- `join!`: Run multiple futures concurrently, wait for all
+- `select!`: Run multiple futures, return when first completes
+- `oneshot`: Single-value channel (notify when done)
+- `mpsc`: Async multi-producer single-consumer channel
+- `.fuse()`: Safe to poll after completion
+- `.then()`: Chain futures (like `.map()` but returns Future)
+- `Sink`: Write-side counterpart to Stream
+
+### Rig capabilities researched
+- **Has**: `Model` struct with `context_length` field, `ModelListingClient` trait, token usage in responses
+- **Missing**: Anthropic doesn't implement `ModelListingClient`, no pricing data, no input context windows
+- Anthropic's `calculate_max_tokens()` is for OUTPUT limits only, hardcoded per model family
+
+### Ideas for next time
+- `/compact` command — erase history and replace with summarized conversation state
+- Export/import history — serialize `Vec<Message>` to JSON
+- Tool calling — let agent invoke existing commands (`/clear`, `/history`, `/summarize`)
+- Contribute `ModelListingClient` for Anthropic to Rig
