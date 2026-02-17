@@ -1,4 +1,5 @@
 use crate::chat::{input::Input, State};
+use crate::command::compact::Compact;
 use crate::command::tokens::Tokens;
 use crate::command::{
     clear::Clear, exit::Exit, help::Help, history::History, model::Model, summarize::Summarize,
@@ -46,6 +47,10 @@ impl Runner {
                 }
                 Input::SummarizeCommand => {
                     Summarize::execute(&mut state).await?;
+                    continue;
+                }
+                Input::CompactCommand => {
+                    Compact::execute(&mut state).await?;
                     continue;
                 }
                 Input::Empty => continue,

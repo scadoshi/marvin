@@ -4,6 +4,7 @@ use crate::{chat::input::Input, config::Config, ui::horizontal_line};
 use futures::StreamExt;
 use rig::{
     agent::{Agent, MultiTurnStreamItem},
+    completion::Chat,
     message::Message,
     providers::anthropic::{
         completion::{CompletionModel, CLAUDE_3_5_HAIKU, CLAUDE_4_OPUS, CLAUDE_4_SONNET},
@@ -63,10 +64,17 @@ impl State {
         self.model = model.into();
         self
     }
+    pub async fn send(&mut self, message: impl Into<Message>) -> anyhow::Result<String> {
+        let message = message.into();
+        self.add_to_history(message.clone());
+        let response = self.agent.chat(message, self.history().to_owned()).await?;
+        self.add_to_history(Message::assistant(response.clone()));
+        Ok(response)
+    }
     pub async fn stream(&mut self, message: impl Into<Message>) {
         horizontal_line();
         let message: Message = message.into();
-        self.history.push(message.clone());
+        self.add_to_history(message.clone());
         let mut stream = self
             .agent
             .stream_chat(message, self.history().to_owned())
@@ -79,7 +87,7 @@ impl State {
                 }
                 Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(
                     text,
-                ))) => {
+                ))) if !text.text().trim().is_empty() => {
                     print!("{}", text.text());
                 }
                 Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Final(

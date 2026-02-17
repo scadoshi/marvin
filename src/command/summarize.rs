@@ -9,8 +9,8 @@ impl AsyncCommand for Summarize {
         if state.history().is_empty() {
             println!("Nothing to summarize");
         } else {
-            let summarize_prompt = "Summarize our conversation so far in 2-4 sentences. Focus on the key topics discussed and any conclusions reached.";
-            state.stream(Message::user(summarize_prompt)).await;
+            let prompt = "Summarize our conversation so far in 2-4 sentences. Focus on the key topics discussed and any conclusions reached.";
+            state.stream(Message::user(prompt)).await;
         }
         Ok(())
     }

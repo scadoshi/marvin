@@ -7,6 +7,7 @@ pub enum Input {
     ModelCommand,
     HelpCommand,
     SummarizeCommand,
+    CompactCommand,
     Message(String),
     #[default]
     Empty,
@@ -32,6 +33,8 @@ where
             Self::HelpCommand
         } else if value == "/summarize" {
             Self::SummarizeCommand
+        } else if value == "/compact" {
+            Self::CompactCommand
         } else if value.is_empty() {
             Self::Empty
         } else {

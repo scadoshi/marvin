@@ -1,4 +1,5 @@
 pub mod clear;
+pub mod compact;
 pub mod exit;
 pub mod help;
 pub mod history;
