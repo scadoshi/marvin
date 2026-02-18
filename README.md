@@ -1,4 +1,4 @@
-# scotbot
+# marvin
 
 A small CLI chat application built to learn the [Rig](https://github.com/21-labs/rig) framework in Rust.
 
@@ -11,8 +11,10 @@ Runs an interactive terminal chat loop backed by Anthropic's Claude via Rig. Sup
 | Command | Description |
 |---------|-------------|
 | `/model` | Switch between available Claude models |
+| `/tokens` | Show token usage |
 | `/history` | Show last 10 messages from chat history |
 | `/summarize` | Ask the agent to summarize the conversation |
+| `/compact` | Condense conversation history |
 | `/clear` | Clear chat history |
 | `/help` | List all available commands |
 | `/exit` | Print farewell message and end the session |
@@ -22,7 +24,6 @@ Runs an interactive terminal chat loop backed by Anthropic's Claude via Rig. Sup
 1. Clone the repo and make sure you have Rust installed (`rustup` / `cargo`).
 2. Copy `.env.example` to `.env` and fill in your values:
    - `ANTHROPIC_API_KEY` — your Anthropic API key
-   - `PREAMBLE` — the system prompt for the agent
 3. Build and run:
 
 ```sh

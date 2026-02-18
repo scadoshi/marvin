@@ -15,7 +15,6 @@ pub struct Runner;
 impl Runner {
     pub async fn run(mut state: State) -> anyhow::Result<()> {
         println!("Agent: {}", state.model());
-        println!("Preamble: {}", state.config().preamble());
         horizontal_line();
         println!("Type a message and click enter to submit");
         loop {

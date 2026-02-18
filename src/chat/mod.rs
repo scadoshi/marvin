@@ -21,6 +21,8 @@ use rig::{
 };
 use std::io::stdin;
 
+pub static PREAMBLE: &str = include_str!("preamble.txt");
+
 pub struct State {
     config: Config,
     model_options: Vec<ModelInfo>,
@@ -53,7 +55,8 @@ impl State {
             {
                 agent = Client::new(config.anthropic_api_key())?
                     .agent(id)
-                    .preamble(config.preamble())
+                    .name("Marvin")
+                    .preamble(PREAMBLE)
                     .build();
                 horizontal_line();
                 break;
@@ -90,7 +93,7 @@ impl State {
     pub fn set_agent(&mut self, model: ModelInfo) -> anyhow::Result<()> {
         self.agent = Client::new(self.config().anthropic_api_key())?
             .agent(model.id)
-            .preamble(self.config().preamble())
+            .preamble(PREAMBLE)
             .build();
         Ok(())
     }

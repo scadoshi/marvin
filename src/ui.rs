@@ -7,7 +7,7 @@ pub fn horizontal_line() {
 }
 
 pub fn welcome_message() -> anyhow::Result<()> {
-    println!("Welcome to ScotBot, your personal AI assistant!");
+    println!("Hello, I am Marvin, your personal AI assistant!");
     print!("Initiating new chat state");
     for _ in 0..3 {
         std::thread::sleep(std::time::Duration::from_millis(500));
