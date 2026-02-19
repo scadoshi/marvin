@@ -1,4 +1,4 @@
-use crate::{chat, command::save_chat_history::SaveChatHistory, ui::horizontal_line};
+use crate::{chat, ui::horizontal_line, user_commands::save_chat_history::SaveChatHistory};
 
 pub trait ExitProcess {
     fn exit_process(&mut self) -> anyhow::Result<()>;

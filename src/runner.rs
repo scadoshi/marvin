@@ -1,15 +1,12 @@
 use crate::chat::{input::Input, State};
-use crate::command::clear_context::ClearContext;
-use crate::command::compact_context::CompactContext;
-use crate::command::exit_process::ExitProcess;
-use crate::command::import_chat_history::ImportChatHistory;
-use crate::command::save_chat_history::SaveChatHistory;
-use crate::command::show_chat_history::ShowChatHistory;
-use crate::command::show_context_summary::ShowContextSummary;
-use crate::command::show_help_message::ShowHelpMessage;
-use crate::command::show_token_usage::ShowTokenUsage;
-use crate::command::switch_model::SwitchModel;
 use crate::ui::horizontal_line;
+use crate::user_commands::{
+    clear_context::ClearContext, compact_context::CompactContext, exit_process::ExitProcess,
+    import_chat_history::ImportChatHistory, save_chat_history::SaveChatHistory,
+    show_chat_history::ShowChatHistory, show_context_summary::ShowContextSummary,
+    show_help_message::ShowHelpMessage, show_token_usage::ShowTokenUsage,
+    switch_model::SwitchModel,
+};
 use rig::message::Message;
 
 pub struct Runner;
