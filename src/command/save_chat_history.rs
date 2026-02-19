@@ -12,7 +12,11 @@ impl SaveChatHistory for chat::State {
         self.clear_input();
         self.save_history_to_file()?;
         horizontal_line();
-        println!("Saved chat history to the {}/ directory", CHATS_DIR_NAME);
+        println!(
+            "Saved chat (ID = {}) history to the {}/ directory",
+            self.id(),
+            CHATS_DIR_NAME
+        );
         Ok(())
     }
 }
