@@ -1,14 +1,14 @@
-use crate::{chat, ui::horizontal_line};
+use crate::{chat::Chat, ui::horizontal_line};
 
 pub trait ClearContext {
     fn clear_context(&mut self) -> anyhow::Result<()>;
 }
 
-impl ClearContext for chat::State {
+impl ClearContext for Chat {
     fn clear_context(&mut self) -> anyhow::Result<()> {
         horizontal_line();
         println!("Chat history cleared");
-        self.clear_history();
+        self.clear_chat_history();
         self.clear_input();
         Ok(())
     }

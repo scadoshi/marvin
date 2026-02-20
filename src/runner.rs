@@ -1,77 +1,73 @@
-use crate::chat::{input::Input, State};
-use crate::ui::horizontal_line;
-use crate::user_commands::{
-    clear_context::ClearContext, compact_context::CompactContext, exit_process::ExitProcess,
-    import_chat_history::ImportChatHistory, save_chat_history::SaveChatHistory,
-    show_chat_history::ShowChatHistory, show_context_summary::ShowContextSummary,
-    show_help_message::ShowHelpMessage, show_token_usage::ShowTokenUsage,
-    switch_model::SwitchModel,
+use crate::{
+    chat::{Chat, ChatInput},
+    ui::horizontal_line,
+    user_commands::*,
 };
 use rig::message::Message;
 
 pub struct Runner;
 
 impl Runner {
-    pub async fn run(mut state: State) -> anyhow::Result<()> {
-        println!("Agent: {}", state.model());
+    pub async fn run(mut chat: Chat) -> anyhow::Result<()> {
+        println!("Agent: {}", chat.model());
         horizontal_line();
         println!("Type a message and click enter to submit");
         loop {
             horizontal_line();
-            if state.input().is_none() {
-                state.get_input();
+            if chat.input().is_none() {
+                chat.get_input();
             }
-            match state.input() {
-                Input::ClearContext => {
-                    state.clear_context()?;
+            match chat.input() {
+                ChatInput::ClearContext => {
+                    chat.clear_context()?;
                     continue;
                 }
-                Input::ShowHelpMessage => {
-                    state.show_help_message();
+                ChatInput::ShowHelpMessage => {
+                    chat.show_help_message();
                     continue;
                 }
-                Input::ShowChatHistory => {
-                    state.show_chat_history();
+                ChatInput::ShowChatHistory => {
+                    chat.show_chat_history();
                     continue;
                 }
-                Input::SaveChatHistory => {
-                    state.save_chat_history()?;
+                ChatInput::SaveChatHistory => {
+                    chat.save_chat_history()?;
                     continue;
                 }
-                Input::ImportChatHistory(id) => {
-                    state.import_chat_history(*id);
+                ChatInput::ImportChatHistory(id) => {
+                    chat.import_chat_history(*id);
                     continue;
                 }
-                Input::ShowTokenUsage => {
-                    state.show_token_usage();
+                ChatInput::ShowTokenUsage => {
+                    chat.show_token_usage();
                     continue;
                 }
-                Input::SwitchModel => {
-                    state.switch_model()?;
+                ChatInput::SwitchModel => {
+                    chat.switch_model()?;
                     continue;
                 }
-                Input::ShowContextSummary => {
-                    state.show_context_summary().await?;
+                ChatInput::ShowContextSummary => {
+                    chat.show_context_summary().await?;
                     continue;
                 }
-                Input::CompactContext => {
-                    state.compact_context().await?;
+                ChatInput::CompactContext => {
+                    chat.compact_context().await?;
                     continue;
                 }
-                Input::None => continue,
-                Input::ExitProcess => {
-                    state.exit_process()?;
+                ChatInput::None => continue,
+                ChatInput::ExitProcess => {
+                    chat.exit_process()?;
                     break;
                 }
-                Input::SendMessage(message) => {
+                ChatInput::SendMessage(message) => {
                     if message.is_empty() {
                         println!("Type a message and click enter");
-                        state.clear_input();
+                        chat.clear_input();
                         continue;
                     }
                     let message = message.to_owned();
-                    state.clear_input();
-                    state.stream(Message::user(message)).await;
+                    chat.clear_input();
+                    chat.stream(Message::user(message)).await;
                 }
             }
         }

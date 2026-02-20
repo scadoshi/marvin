@@ -1,6 +1,6 @@
 use rig::message::{AssistantContent, Message, UserContent};
 
-use crate::{chat, ui::horizontal_line};
+use crate::{chat::Chat, ui::horizontal_line};
 
 pub const HISTORY_LEN: usize = 10;
 
@@ -8,10 +8,10 @@ pub trait ShowChatHistory {
     fn show_chat_history(&mut self);
 }
 
-impl ShowChatHistory for chat::State {
+impl ShowChatHistory for Chat {
     fn show_chat_history(&mut self) {
         const TRUNCATE_AT: usize = 300;
-        if self.history().is_empty() {
+        if self.chat_history().is_empty() {
             self.clear_input();
             horizontal_line();
             println!("No chat history");
@@ -22,7 +22,7 @@ impl ShowChatHistory for chat::State {
         horizontal_line();
         self.clear_input();
         let messages: Vec<_> = self
-            .history()
+            .chat_history()
             .iter()
             .rev()
             .take(HISTORY_LEN)

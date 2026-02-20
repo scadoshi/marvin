@@ -1,5 +1,5 @@
 use crate::{
-    chat::{self, input::Input},
+    chat::{input::ChatInput, Chat},
     ui::horizontal_line,
 };
 
@@ -7,7 +7,7 @@ pub trait SwitchModel {
     fn switch_model(&mut self) -> anyhow::Result<()>;
 }
 
-impl SwitchModel for chat::State {
+impl SwitchModel for Chat {
     fn switch_model(&mut self) -> anyhow::Result<()> {
         horizontal_line();
         self.clear_input();
@@ -21,7 +21,7 @@ impl SwitchModel for chat::State {
             horizontal_line();
             self.get_input();
             match self.input() {
-                Input::SendMessage(message) => {
+                ChatInput::SendMessage(message) => {
                     let Some(selection) = self
                         .model_options()
                         .iter()

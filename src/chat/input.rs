@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Default)]
-pub enum Input {
+pub enum ChatInput {
     ExitProcess,
     ShowChatHistory,
     SaveChatHistory,
@@ -15,7 +15,7 @@ pub enum Input {
     None,
 }
 
-impl<T> From<T> for Input
+impl<T> From<T> for ChatInput
 where
     T: AsRef<str>,
 {
@@ -54,7 +54,7 @@ where
     }
 }
 
-impl Input {
+impl ChatInput {
     pub fn new() -> Self {
         Self::default()
     }
@@ -62,6 +62,6 @@ impl Input {
         *self = Self::None;
     }
     pub fn is_none(&self) -> bool {
-        matches!(self, Input::None)
+        matches!(self, ChatInput::None)
     }
 }

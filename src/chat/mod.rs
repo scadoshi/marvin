@@ -1,16 +1,18 @@
+pub mod config;
 pub mod input;
+pub use input::ChatInput;
 
 use crate::{
-    anthropic::{GetAnthropicModels, ModelInfo},
-    chat::input::Input,
-    config::Config,
+    agent_tools::add::Adder,
+    anthropic::{get_models::GetAnthropicModels, ModelInfo},
+    chat::config::Config,
     ui::{horizontal_line, welcome_message},
 };
 use futures::StreamExt;
 use rig::{
     agent::{Agent, MultiTurnStreamItem},
     client::CompletionClient,
-    completion::Chat,
+    completion::Chat as ChatTrait,
     message::Message,
     providers::anthropic::{
         completion::CompletionModel,
@@ -23,19 +25,18 @@ use std::collections::HashSet;
 
 pub static PREAMBLE: &str = include_str!("preamble.txt");
 
-pub struct State {
+pub struct Chat {
     id: u16,
     config: Config,
     model_options: Vec<ModelInfo>,
     agent: Agent<CompletionModel>,
-    history: Vec<Message>,
-    input: Input,
+    chat_history: Vec<Message>,
+    input: ChatInput,
     total_input_tokens_used: usize,
     total_output_tokens_used: usize,
 }
 
 pub const CHATS_DIR_NAME: &str = "chats";
-
 fn next_chat_id() -> anyhow::Result<u16> {
     std::fs::create_dir_all(CHATS_DIR_NAME)?;
     let existing_chat_ids: HashSet<u16> = std::fs::read_dir(CHATS_DIR_NAME)?
@@ -58,7 +59,7 @@ fn next_chat_id() -> anyhow::Result<u16> {
     }
 }
 
-impl State {
+impl Chat {
     pub async fn new() -> anyhow::Result<Self> {
         let id = next_chat_id()?;
         welcome_message(id);
@@ -84,6 +85,8 @@ impl State {
                     .agent(id)
                     .name("Marvin")
                     .preamble(PREAMBLE)
+                    .tool(Adder)
+                    .default_max_turns(100)
                     .build();
                 horizontal_line();
                 break;
@@ -99,8 +102,8 @@ impl State {
             config,
             model_options,
             agent,
-            history: Vec::new(),
-            input: Input::new(),
+            chat_history: Vec::new(),
+            input: ChatInput::new(),
             total_input_tokens_used: 0,
             total_output_tokens_used: 0,
         })
@@ -130,23 +133,26 @@ impl State {
     }
     pub async fn send(&mut self, message: impl Into<Message>) -> anyhow::Result<String> {
         let message = message.into();
-        self.add_to_history(message.clone());
-        let response = self.agent.chat(message, self.history().to_owned()).await?;
-        self.add_to_history(Message::assistant(response.clone()));
+        self.add_to_chat_history(message.clone());
+        let response = self
+            .agent
+            .chat(message, self.chat_history().to_owned())
+            .await?;
+        self.add_to_chat_history(Message::assistant(response.clone()));
         Ok(response)
     }
     pub async fn stream(&mut self, message: impl Into<Message>) {
         horizontal_line();
         let message: Message = message.into();
-        self.add_to_history(message.clone());
+        self.add_to_chat_history(message.clone());
         let mut stream = self
             .agent
-            .stream_chat(message, self.history().to_owned())
+            .stream_chat(message, self.chat_history().to_owned())
             .await;
         while let Some(result) = stream.next().await {
             match result {
                 Ok(MultiTurnStreamItem::FinalResponse(final_response)) => {
-                    self.history
+                    self.chat_history
                         .push(Message::assistant(final_response.response()));
                 }
                 Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(
@@ -176,28 +182,28 @@ impl State {
             }
         }
     }
-    pub fn history(&self) -> &[Message] {
-        self.history.as_slice()
+    pub fn chat_history(&self) -> &[Message] {
+        self.chat_history.as_slice()
     }
-    pub fn clear_history(&mut self) {
-        self.history.clear();
+    pub fn clear_chat_history(&mut self) {
+        self.chat_history.clear();
     }
-    pub fn add_to_history(&mut self, message: impl Into<Message>) {
-        self.history.push(message.into());
+    pub fn add_to_chat_history(&mut self, message: impl Into<Message>) {
+        self.chat_history.push(message.into());
     }
-    pub fn save_history_to_file(&self) -> anyhow::Result<()> {
+    pub fn save_chat_history_to_file(&self) -> anyhow::Result<()> {
         let file_path = format!("{}/{}.json", CHATS_DIR_NAME, self.id());
         let file = std::fs::File::create(file_path)?;
-        let history_json = serde_json::to_value(self.history())?;
-        serde_json::to_writer_pretty(file, &history_json)?;
+        let chat_history_json = serde_json::to_value(self.chat_history())?;
+        serde_json::to_writer_pretty(file, &chat_history_json)?;
         Ok(())
     }
-    pub fn append_history_from_file_infallible(&mut self, id: u16) {
+    pub fn append_chat_history_from_file_infallible(&mut self, id: u16) {
         let file_path = format!("{}/{}.json", CHATS_DIR_NAME, id);
         let file_result = std::fs::File::open(file_path);
         match file_result {
             Ok(mut file) => {
-                println!("History with ID: {} found!", id);
+                println!("chat_history with ID: {} found!", id);
                 let file_str = {
                     let mut file_str = String::new();
                     let Ok(_) =
@@ -208,22 +214,22 @@ impl State {
                     };
                     file_str
                 };
-                let Ok(history) = serde_json::from_str::<Vec<Message>>(&file_str) else {
+                let Ok(chat_history) = serde_json::from_str::<Vec<Message>>(&file_str) else {
                     println!("Failed to serialize file to `Vec<Message>`");
                     return;
                 };
-                self.history.extend(history);
+                self.chat_history.extend(chat_history);
             }
-            Err(e) => println!("Failed to get history: {}", e),
+            Err(e) => println!("Failed to get chat_history: {}", e),
         }
     }
-    pub fn input(&self) -> &Input {
+    pub fn input(&self) -> &ChatInput {
         &self.input
     }
     pub fn get_input(&mut self) {
         let mut input_str = String::new();
         match std::io::stdin().read_line(&mut input_str) {
-            Ok(_) => self.input = Input::from(input_str),
+            Ok(_) => self.input = ChatInput::from(input_str),
             Err(e) => {
                 eprintln!("Error: {}", e);
                 println!("Input failed");
