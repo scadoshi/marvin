@@ -168,10 +168,17 @@ Since there's no official Rust SDK (as of 2026-02), use:
 ### Tool 1: WebSearch
 **Purpose**: Let agent search web for current information
 
-**Rig Tool Implementation**:
+**Rig Tool Implementation (with schemars)**:
 ```rust
+use schemars::JsonSchema;
+use schemars::schema_for;
+
+#[derive(Deserialize, Serialize, JsonSchema)]
 pub struct WebSearchArgs {
+    #[schemars(description = "The search query")]
     pub query: String,
+
+    #[schemars(description = "Maximum number of results (default: 5)")]
     pub max_results: Option<u32>,
 }
 
@@ -184,23 +191,11 @@ impl Tool for WebSearch {
     type Error = ToolError;
 
     async fn definition(&self, _prompt: String) -> ToolDefinition {
+        let schema = schema_for!(WebSearchArgs);
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Search the web for current information on a topic".to_string(),
-            parameters: json!({
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "The search query"
-                    },
-                    "max_results": {
-                        "type": "integer",
-                        "description": "Maximum number of results (default: 5)"
-                    }
-                },
-                "required": ["query"]
-            }),
+            parameters: serde_json::to_value(schema).unwrap(),
         }
     }
 
@@ -209,6 +204,13 @@ impl Tool for WebSearch {
         // Return formatted results as JSON string
     }
 }
+```
+
+**Benefits of schemars approach**:
+- Type-safe: schema derived from actual Rust type
+- No manual JSON schema maintenance
+- Descriptions live next to fields
+- Automatically handles `Option<T>`, enums, nested structs
 ```
 
 ### Tool 2: ExtractURL
@@ -247,10 +249,17 @@ Add to `src/chat/config.rs`:
 Add to `Cargo.toml`:
 ```toml
 # Already have reqwest, serde, serde_json
+schemars = "0.8"  # For automatic JSON Schema generation from Rust structs
 # May need:
 tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread", "time"] }
 # For polling research status
 ```
+
+**Why schemars?**
+- Automatically generates JSON Schema from Rust types using `#[derive(JsonSchema)]`
+- Cleaner than manually writing JSON schema in `ToolDefinition`
+- Type-safe: schema stays in sync with your Rust types
+- Required for complex tool arguments (structs with optional fields, enums, nested types)
 
 ## Integration Steps
 
