@@ -1,84 +1,60 @@
+pub mod request;
+#[allow(dead_code)]
+pub mod response;
+
+use super::tavily::{TavilyClient, BASE_URL};
+use crate::agent_tools::{SomeError, ToToolError, ToToolResult};
+use request::SearchArgs;
+use reqwest::StatusCode;
 use rig::{
     completion::ToolDefinition,
     tool::{Tool, ToolError},
 };
-use serde::{Deserialize, Serialize};
+use schemars::schema_for;
+use serde_json::Value;
+use std::sync::Arc;
+use url::Url;
 
-#[derive(Default, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum Topic {
-    #[default]
-    General,
-    News,
-    Finance,
+const SEARCH_PATH: &str = "/search";
+
+pub struct Search {
+    client: Arc<TavilyClient>,
 }
 
-#[derive(Default, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum SearchDepth {
-    Advanced,
-    #[default]
-    Basic,
-    Fast,
-    Utrafast,
+impl Search {
+    pub fn new(client: Arc<TavilyClient>) -> Self {
+        Self { client }
+    }
 }
-
-#[derive(Default, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum TimeRange {
-    #[default]
-    None,
-    Day,
-    Week,
-    Month,
-    Year,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct SearchArgs {
-    query: String,
-    auto_parameters: bool,
-    topic: Topic,
-    search_depth: SearchDepth,
-    chunks_per_source: usize,
-    max_results: usize,
-    time_range: TimeRange,
-    start_date: String,
-    end_date: String,
-    include_answer: bool,
-    include_raw_content: bool,
-    include_images: bool,
-    include_image_descriptions: bool,
-    include_favicon: bool,
-    include_domains: Vec<String>,
-    exclude_domains: Vec<String>,
-    country: Option<String>,
-    include_usage: bool,
-}
-
-pub struct Search;
 
 impl Tool for Search {
-    const NAME: &'static str = "add";
+    const NAME: &'static str = "search_web";
     type Args = SearchArgs;
-    type Output = i64;
+    type Output = Value;
     type Error = ToolError;
 
-    async fn definition(&self, _promp: String) -> ToolDefinition {
+    async fn definition(&self, _prompt: String) -> ToolDefinition {
         ToolDefinition {
             name: Self::NAME.to_string(),
-            description: "returns sum of two given numbers, lhs and rhs".to_string(),
-            parameters: serde_json::json!({
-                "type": "object",
-                "properties": {
-                    "lhs": {"type": "number", "description": "left hand side: the first number"},
-                    "rhs": {"type": "number", "description": "right hand side: the second number"}
-                }
-            }),
+            description: "Search the web for current information using Tavily API".to_string(),
+            parameters: serde_json::to_value(schema_for!(SearchArgs)).unwrap(),
         }
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        Ok(args.lhs + args.rhs)
+        let url = Url::parse(BASE_URL)
+            .to_tool_result()?
+            .join(SEARCH_PATH)
+            .to_tool_result()?;
+        let json = serde_json::to_value(args).to_tool_result()?;
+        let response = self.client.post(url, json).await.to_tool_result()?;
+        let status = response.status();
+        let body = response.json::<Value>().await.to_tool_result()?;
+        match status {
+            StatusCode::OK => Ok(body),
+            status => {
+                Err(SomeError(format!("Search failed with {}: {:?}", status, body)).to_tool_err())
+            }
+        }
     }
 }

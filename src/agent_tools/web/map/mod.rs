@@ -5,7 +5,7 @@ pub mod response;
 use crate::agent_tools::{SomeError, ToToolError, ToToolResult};
 
 use super::tavily::{TavilyClient, BASE_URL};
-use request::CrawlArgs;
+use request::MapArgs;
 use reqwest::StatusCode;
 use rig::{
     completion::ToolDefinition,
@@ -16,36 +16,36 @@ use serde_json::Value;
 use std::sync::Arc;
 use url::Url;
 
-const CRAWL_PATH: &str = "/crawl";
+const MAP_PATH: &str = "/map";
 
-pub struct Crawl {
+pub struct Map {
     client: Arc<TavilyClient>,
 }
 
-impl Crawl {
+impl Map {
     pub fn new(client: Arc<TavilyClient>) -> Self {
         Self { client }
     }
 }
 
-impl Tool for Crawl {
-    const NAME: &'static str = "crawl_website";
-    type Args = CrawlArgs;
+impl Tool for Map {
+    const NAME: &'static str = "map_website";
+    type Args = MapArgs;
     type Output = Value;
     type Error = ToolError;
 
     async fn definition(&self, _prompt: String) -> ToolDefinition {
         ToolDefinition {
             name: Self::NAME.to_string(),
-            description: "Crawl a website starting from a root URL, exploring linked pages and extracting content. Use for indexing documentation sites or knowledge bases.".to_string(),
-            parameters: serde_json::to_value(schema_for!(CrawlArgs)).unwrap(),
+            description: "Generate a site map by discovering all URLs on a website. Returns a list of discovered URLs without extracting content. Use to understand site structure before crawling.".to_string(),
+            parameters: serde_json::to_value(schema_for!(MapArgs)).unwrap(),
         }
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         let url = Url::parse(BASE_URL)
             .to_tool_result()?
-            .join(CRAWL_PATH)
+            .join(MAP_PATH)
             .to_tool_result()?;
         let json = serde_json::to_value(args).to_tool_result()?;
         let response = self.client.post(url, json).await.to_tool_result()?;

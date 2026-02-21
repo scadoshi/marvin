@@ -3,7 +3,7 @@ pub mod input;
 pub use input::ChatInput;
 
 use crate::{
-    agent_tools::{math_tools, web::web_tools},
+    agent_tools::{math_tools, web::tavily::TavilyClient, WebTools},
     anthropic::{get_models::GetAnthropicModels, ModelInfo},
     chat::config::Config,
     ui::{horizontal_line, welcome_message},
@@ -21,7 +21,7 @@ use rig::{
     },
     streaming::{StreamedAssistantContent, StreamingChat},
 };
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::Arc};
 
 pub static PREAMBLE: &str = include_str!("preamble.txt");
 
@@ -34,6 +34,7 @@ pub struct Chat {
     input: ChatInput,
     total_input_tokens_used: usize,
     total_output_tokens_used: usize,
+    tavily_client: Arc<TavilyClient>,
 }
 
 pub const CHATS_DIR_NAME: &str = "chats";
@@ -64,6 +65,7 @@ impl Chat {
         let id = next_chat_id()?;
         welcome_message(id);
         let config = Config::from_env()?;
+        let tavily_client = Arc::new(TavilyClient::from(&config));
         let model_options = config.get_models().await?;
         let agent: Agent<CompletionModel>;
         let mut input = String::new();
@@ -86,7 +88,7 @@ impl Chat {
                     .name("Marvin")
                     .preamble(PREAMBLE)
                     .tools(math_tools())
-                    .tools(web_tools())
+                    .tools(tavily_client.web_tools())
                     .default_max_turns(100)
                     .build();
                 horizontal_line();
@@ -107,6 +109,7 @@ impl Chat {
             input: ChatInput::new(),
             total_input_tokens_used: 0,
             total_output_tokens_used: 0,
+            tavily_client,
         })
     }
     pub fn id(&self) -> u16 {
@@ -129,6 +132,8 @@ impl Chat {
         self.agent = Client::new(self.config().anthropic_api_key())?
             .agent(model.id)
             .preamble(PREAMBLE)
+            .tools(math_tools())
+            .tools(self.tavily_client().web_tools())
             .build();
         Ok(())
     }
@@ -252,5 +257,8 @@ impl Chat {
     }
     pub fn add_output_tokens_used(&mut self, output_tokens: usize) {
         self.total_output_tokens_used += output_tokens;
+    }
+    pub fn tavily_client(&self) -> Arc<TavilyClient> {
+        self.tavily_client.clone()
     }
 }

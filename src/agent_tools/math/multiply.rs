@@ -2,11 +2,14 @@ use rig::{
     completion::ToolDefinition,
     tool::{Tool, ToolError},
 };
+use schemars::{schema_for, JsonSchema};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, JsonSchema)]
 pub struct MultiplyArgs {
+    #[schemars(description = "left hand side \\ the first number")]
     pub lhs: i64,
+    #[schemars(description = "right hand side \\ the second number")]
     pub rhs: i64,
 }
 
@@ -22,13 +25,7 @@ impl Tool for Multiply {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "returns product of two given numbers, lhs and rhs".to_string(),
-            parameters: serde_json::json!({
-                "type": "object",
-                "properties": {
-                    "lhs": {"type": "number", "description": "left hand side: the first number"},
-                    "rhs": {"type": "number", "description": "right hand side: the second number"}
-                }
-            }),
+            parameters: serde_json::to_value(schema_for!(MultiplyArgs)).unwrap(),
         }
     }
 

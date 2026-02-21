@@ -2,11 +2,14 @@ use rig::{
     completion::ToolDefinition,
     tool::{Tool, ToolError},
 };
+use schemars::{schema_for, JsonSchema};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, JsonSchema)]
 pub struct DivideArgs {
+    #[schemars(description = "left hand side \\ the first number \\ the dividend")]
     pub lhs: i64,
+    #[schemars(description = "right hand side \\ the second number \\ the divisor")]
     pub rhs: i64,
 }
 
@@ -18,18 +21,13 @@ impl Tool for Divide {
     type Output = i64;
     type Error = ToolError;
 
-    async fn definition(&self, _promp: String) -> ToolDefinition {
+    async fn definition(&self, _prompt: String) -> ToolDefinition {
         ToolDefinition {
             name: Self::NAME.to_string(),
-            description: "returns a quotient given two numbers, lhs and rhs, lhs is divided by rhs"
-                .to_string(),
-            parameters: serde_json::json!({
-                "type": "object",
-                "properties": {
-                    "lhs": {"type": "number", "description": "left hand side: the first number, the dividend"},
-                    "rhs": {"type": "number", "description": "right hand side: the second number, the divisor"}
-                }
-            }),
+            description:
+                "returns quotient of two given numbers, lhs and rhs (lhs is divided by rhs)"
+                    .to_string(),
+            parameters: serde_json::to_value(schema_for!(DivideArgs)).unwrap(),
         }
     }
 

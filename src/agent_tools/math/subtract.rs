@@ -2,11 +2,14 @@ use rig::{
     completion::ToolDefinition,
     tool::{Tool, ToolError},
 };
+use schemars::{schema_for, JsonSchema};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, JsonSchema)]
 pub struct SubtractArgs {
+    #[schemars(description = "left hand side \\ the first number \\ the minuend")]
     pub lhs: i64,
+    #[schemars(description = "right hand side \\ the second number \\ the subtrahend")]
     pub rhs: i64,
 }
 
@@ -18,19 +21,13 @@ impl Tool for Subtract {
     type Output = i64;
     type Error = ToolError;
 
-    async fn definition(&self, _promp: String) -> ToolDefinition {
+    async fn definition(&self, _prompt: String) -> ToolDefinition {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description:
-                "returns difference of two given numbers, lhs and rhs, rhs is subtracted from lhs"
+                "returns difference of two given numbers, lhs and rhs (rhs is subtracted from lhs)"
                     .to_string(),
-            parameters: serde_json::json!({
-                "type": "object",
-                "properties": {
-                    "lhs": {"type": "number", "description": "left hand side: the first number"},
-                    "rhs": {"type": "number", "description": "right hand side: the second number"}
-                }
-            }),
+            parameters: serde_json::to_value(schema_for!(SubtractArgs)).unwrap(),
         }
     }
 

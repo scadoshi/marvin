@@ -269,3 +269,49 @@
 - **Network tools**: `FetchURL`, `CheckDomain` (explore reqwest integration)
 - **Calculator with memory**: tool that maintains state across invocations
 - **Tool chaining**: agent combines multiple tools to solve complex tasks
+
+## Session 7 — 2026-02-21
+
+### What was done
+- Implemented four Tavily web tools: `search_web`, `extract_url`, `crawl_website`, `map_website`
+- Added `schemars` crate for automatic JSON Schema generation from Rust types
+- Refactored all math tools (`Add`, `Subtract`, `Multiply`, `Divide`) to use schemars
+- Created `TavilyClient` with `Arc` sharing pattern for efficient client reuse across tools
+- Implemented `WebTools` trait on `Arc<TavilyClient>` for tool construction
+- Added error handling utilities: `ToToolError`, `ToToolResult` traits and `SomeError` wrapper
+- Fixed Tavily API errors by adding `#[serde(skip_serializing_if = "Option::is_none")]` to optional fields
+- Simplified tool output to pass-through `serde_json::Value` instead of typed response structs
+
+### What was learned
+- **schemars**: `#[derive(JsonSchema)]` + `schema_for!()` eliminates manual JSON Schema writing
+- **serde skip_serializing_if**: APIs often reject `null` values for optional fields — omit them entirely
+- **Arc sharing**: Store shared clients in `Arc`, clone into each tool that needs it
+- **Tool output types**: Can use `serde_json::Value` for pass-through when typed parsing isn't needed
+- **Extension traits**: `ToToolResult` pattern for ergonomic error conversion (`.to_tool_result()?`)
+- **thiserror**: Quick `#[derive(Error)]` for simple error wrappers
+
+### New dependencies
+- `schemars = "1.2.1"` — JSON Schema generation from Rust types
+- `thiserror = "2.0.18"` — Derive macro for Error trait
+- `url = "2.5.8"` — URL parsing and manipulation
+
+### Architecture
+- `src/agent_tools/web/tavily.rs` — `TavilyClient` with HTTP client and API key
+- `src/agent_tools/web/{search,extract,crawl,map}/` — Each tool has:
+  - `mod.rs` — Tool struct and `impl Tool`
+  - `request.rs` — Args struct with schemars annotations
+  - `response.rs` — Response types (currently unused, kept for reference)
+- `src/agent_tools/mod.rs` — Error utilities (`ToToolError`, `ToToolResult`, `SomeError`)
+- `src/chat/config.rs` — Added `tavily_api_key()` accessor
+- `src/chat/mod.rs` — Added `tavily_client: Arc<TavilyClient>` field
+
+### Debugging insights
+- Tavily returns 400/422 when optional fields are sent as `null`
+- Parse response body before checking status to include error details in messages
+- Bearer auth is correct for Tavily API (not body-based api_key)
+
+### Ideas for next time
+- Re-enable typed response parsing with validation
+- Add retry/backoff for rate limits
+- Implement Research API (async polling pattern)
+- Consider caching for repeated queries
