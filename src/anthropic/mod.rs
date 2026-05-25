@@ -17,4 +17,5 @@ pub struct ModelInfo {
     pub created_at: String,
     pub display_name: String,
     pub r#type: String,
+    pub max_tokens: u64,
 }

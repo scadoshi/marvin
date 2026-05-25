@@ -3,8 +3,8 @@ pub mod input;
 pub use input::ChatInput;
 
 use crate::{
-    agent_tools::{math_tools, web::tavily::TavilyClient, WebTools},
-    anthropic::{get_models::GetAnthropicModels, ModelInfo},
+    agent_tools::{WebTools, math_tools, web::tavily::TavilyClient},
+    anthropic::{ModelInfo, get_models::GetAnthropicModels},
     chat::config::Config,
     ui::{horizontal_line, welcome_message},
 };
@@ -15,9 +15,9 @@ use rig::{
     completion::Chat as ChatTrait,
     message::Message,
     providers::anthropic::{
+        Client,
         completion::CompletionModel,
         streaming::{PartialUsage, StreamingCompletionResponse},
-        Client,
     },
     streaming::{StreamedAssistantContent, StreamingChat},
 };
@@ -78,7 +78,7 @@ impl Chat {
             println!("Select a model");
             horizontal_line();
             std::io::stdin().read_line(&mut input)?;
-            if let Some((_, ModelInfo { id, .. })) = model_options
+            if let Some((_, ModelInfo { id, max_tokens, .. })) = model_options
                 .iter()
                 .enumerate()
                 .find(|(i, _)| (i + 1).to_string() == input.trim())
@@ -87,6 +87,7 @@ impl Chat {
                     .agent(id)
                     .name("Marvin")
                     .preamble(PREAMBLE)
+                    .max_tokens(*max_tokens)
                     .tools(math_tools())
                     .tools(tavily_client.web_tools())
                     .default_max_turns(100)
