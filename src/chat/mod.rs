@@ -133,6 +133,7 @@ impl Chat {
         self.agent = Client::new(self.config().anthropic_api_key())?
             .agent(model.id)
             .preamble(PREAMBLE)
+            .max_tokens(model.max_tokens)
             .tools(math_tools())
             .tools(self.tavily_client().web_tools())
             .build();
