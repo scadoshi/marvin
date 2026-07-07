@@ -1,3 +1,4 @@
 /target
 /chats
 .env
+.DS_Store
