@@ -2,7 +2,7 @@ pub mod request;
 #[allow(dead_code)]
 pub mod response;
 
-use super::tavily::{TavilyClient, BASE_URL};
+use super::tavily::{BASE_URL, TavilyClient};
 use crate::agent_tools::{SomeError, ToToolError, ToToolResult};
 use request::SearchArgs;
 use reqwest::StatusCode;
@@ -37,7 +37,8 @@ impl Tool for Search {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Search the web for current information using Tavily API".to_string(),
-            parameters: serde_json::to_value(schema_for!(SearchArgs)).unwrap(),
+            parameters: serde_json::to_value(schema_for!(SearchArgs))
+                .expect("schema is serializable"),
         }
     }
 
@@ -53,7 +54,7 @@ impl Tool for Search {
         match status {
             StatusCode::OK => Ok(body),
             status => {
-                Err(SomeError(format!("Search failed with {}: {:?}", status, body)).to_tool_err())
+                Err(SomeError(format!("Search failed with {status}: {body:?}")).to_tool_err())
             }
         }
     }

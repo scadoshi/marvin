@@ -1,7 +1,10 @@
 use crate::{
     chat::{Chat, ChatInput},
     ui::horizontal_line,
-    user_commands::*,
+    user_commands::{
+        ClearContext, CompactContext, ExitProcess, ImportChatHistory, SaveChatHistory,
+        ShowChatHistory, ShowContextSummary, ShowHelpMessage, ShowTokenUsage, SwitchModel,
+    },
 };
 use rig::message::Message;
 
@@ -18,43 +21,16 @@ impl Runner {
                 chat.get_input();
             }
             match chat.input() {
-                ChatInput::ClearContext => {
-                    chat.clear_context()?;
-                    continue;
-                }
-                ChatInput::ShowHelpMessage => {
-                    chat.show_help_message();
-                    continue;
-                }
-                ChatInput::ShowChatHistory => {
-                    chat.show_chat_history();
-                    continue;
-                }
-                ChatInput::SaveChatHistory => {
-                    chat.save_chat_history()?;
-                    continue;
-                }
-                ChatInput::ImportChatHistory(id) => {
-                    chat.import_chat_history(*id);
-                    continue;
-                }
-                ChatInput::ShowTokenUsage => {
-                    chat.show_token_usage();
-                    continue;
-                }
-                ChatInput::SwitchModel => {
-                    chat.switch_model()?;
-                    continue;
-                }
-                ChatInput::ShowContextSummary => {
-                    chat.show_context_summary().await?;
-                    continue;
-                }
-                ChatInput::CompactContext => {
-                    chat.compact_context().await?;
-                    continue;
-                }
-                ChatInput::None => continue,
+                ChatInput::ClearContext => chat.clear_context()?,
+                ChatInput::ShowHelpMessage => chat.show_help_message(),
+                ChatInput::ShowChatHistory => chat.show_chat_history(),
+                ChatInput::SaveChatHistory => chat.save_chat_history()?,
+                ChatInput::ImportChatHistory(id) => chat.import_chat_history(*id),
+                ChatInput::ShowTokenUsage => chat.show_token_usage(),
+                ChatInput::SwitchModel => chat.switch_model()?,
+                ChatInput::ShowContextSummary => chat.show_context_summary().await?,
+                ChatInput::CompactContext => chat.compact_context().await?,
+                ChatInput::None => {}
                 ChatInput::ExitProcess => {
                     chat.exit_process()?;
                     break;

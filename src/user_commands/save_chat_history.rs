@@ -1,5 +1,5 @@
 use crate::{
-    chat::{Chat, CHATS_DIR_NAME},
+    chat::{CHATS_DIR_NAME, Chat},
     ui::horizontal_line,
 };
 

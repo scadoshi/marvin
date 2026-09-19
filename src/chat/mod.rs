@@ -30,7 +30,7 @@ pub struct Chat {
     config: Config,
     model_options: Vec<ModelInfo>,
     agent: Agent<CompletionModel>,
-    chat_history: Vec<Message>,
+    history: Vec<Message>,
     input: ChatInput,
     total_input_tokens_used: usize,
     total_output_tokens_used: usize,
@@ -44,7 +44,7 @@ fn next_chat_id() -> anyhow::Result<u16> {
         .collect::<Result<Vec<_>, _>>()?
         .iter()
         .filter(|ent| ent.path().extension().and_then(|ostr| ostr.to_str()) == Some("json"))
-        .flat_map(|ent| {
+        .filter_map(|ent| {
             ent.path()
                 .file_prefix()
                 .and_then(|prfx| prfx.to_str())
@@ -106,7 +106,7 @@ impl Chat {
             config,
             model_options,
             agent,
-            chat_history: Vec::new(),
+            history: Vec::new(),
             input: ChatInput::new(),
             total_input_tokens_used: 0,
             total_output_tokens_used: 0,
@@ -126,8 +126,7 @@ impl Chat {
         self.model_options()
             .iter()
             .find(|model| model.id == self.agent.model.model)
-            .map(|model| model.display_name.as_str())
-            .unwrap_or("")
+            .map_or("", |model| model.display_name.as_str())
     }
     pub fn set_agent(&mut self, model: ModelInfo) -> anyhow::Result<()> {
         self.agent = Client::new(self.config().anthropic_api_key())?
@@ -160,7 +159,7 @@ impl Chat {
         while let Some(result) = stream.next().await {
             match result {
                 Ok(MultiTurnStreamItem::FinalResponse(final_response)) => {
-                    self.chat_history
+                    self.history
                         .push(Message::assistant(final_response.response()));
                 }
                 Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(
@@ -185,19 +184,19 @@ impl Chat {
                 }
                 Ok(_) => (),
                 Err(e) => {
-                    eprintln!("Stream Error: {}", e);
+                    eprintln!("Stream Error: {e}");
                 }
             }
         }
     }
     pub fn chat_history(&self) -> &[Message] {
-        self.chat_history.as_slice()
+        self.history.as_slice()
     }
     pub fn clear_chat_history(&mut self) {
-        self.chat_history.clear();
+        self.history.clear();
     }
     pub fn add_to_chat_history(&mut self, message: impl Into<Message>) {
-        self.chat_history.push(message.into());
+        self.history.push(message.into());
     }
     pub fn save_chat_history_to_file(&self) -> anyhow::Result<()> {
         let file_path = format!("{}/{}.json", CHATS_DIR_NAME, self.id());
@@ -207,11 +206,11 @@ impl Chat {
         Ok(())
     }
     pub fn append_chat_history_from_file_infallible(&mut self, id: u16) {
-        let file_path = format!("{}/{}.json", CHATS_DIR_NAME, id);
+        let file_path = format!("{CHATS_DIR_NAME}/{id}.json");
         let file_result = std::fs::File::open(file_path);
         match file_result {
             Ok(mut file) => {
-                println!("chat_history with ID: {} found!", id);
+                println!("chat_history with ID: {id} found!");
                 let file_str = {
                     let mut file_str = String::new();
                     let Ok(_) =
@@ -226,9 +225,9 @@ impl Chat {
                     println!("Failed to serialize file to `Vec<Message>`");
                     return;
                 };
-                self.chat_history.extend(chat_history);
+                self.history.extend(chat_history);
             }
-            Err(e) => println!("Failed to get chat_history: {}", e),
+            Err(e) => println!("Failed to get chat_history: {e}"),
         }
     }
     pub fn input(&self) -> &ChatInput {
@@ -239,7 +238,7 @@ impl Chat {
         match std::io::stdin().read_line(&mut input_str) {
             Ok(_) => self.input = ChatInput::from(input_str),
             Err(e) => {
-                eprintln!("Error: {}", e);
+                eprintln!("Error: {e}");
                 println!("Input failed");
                 self.clear_input();
             }

@@ -35,7 +35,9 @@ pub struct CrawlArgs {
     pub chunks_per_source: Option<u8>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(description = "How far from the base URL the crawler can explore (1-5). Default: 1")]
+    #[schemars(
+        description = "How far from the base URL the crawler can explore (1-5). Default: 1"
+    )]
     pub max_depth: Option<u8>,
 
     #[serde(skip_serializing_if = "Option::is_none")]

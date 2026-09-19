@@ -4,7 +4,7 @@ pub mod response;
 
 use crate::agent_tools::{SomeError, ToToolError, ToToolResult};
 
-use super::tavily::{TavilyClient, BASE_URL};
+use super::tavily::{BASE_URL, TavilyClient};
 use request::MapArgs;
 use reqwest::StatusCode;
 use rig::{
@@ -38,7 +38,7 @@ impl Tool for Map {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Generate a site map by discovering all URLs on a website. Returns a list of discovered URLs without extracting content. Use to understand site structure before crawling.".to_string(),
-            parameters: serde_json::to_value(schema_for!(MapArgs)).unwrap(),
+            parameters: serde_json::to_value(schema_for!(MapArgs)).expect("schema is serializable"),
         }
     }
 
@@ -53,9 +53,7 @@ impl Tool for Map {
         let body = response.json::<Value>().await.to_tool_result()?;
         match status {
             StatusCode::OK => Ok(body),
-            status => {
-                Err(SomeError(format!("Crawl failed with {}: {:?}", status, body)).to_tool_err())
-            }
+            status => Err(SomeError(format!("Crawl failed with {status}: {body:?}")).to_tool_err()),
         }
     }
 }

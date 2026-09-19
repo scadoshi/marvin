@@ -4,7 +4,7 @@ pub mod response;
 
 use crate::agent_tools::{SomeError, ToToolError, ToToolResult};
 
-use super::tavily::{TavilyClient, BASE_URL};
+use super::tavily::{BASE_URL, TavilyClient};
 use request::CrawlArgs;
 use reqwest::StatusCode;
 use rig::{
@@ -38,7 +38,7 @@ impl Tool for Crawl {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Crawl a website starting from a root URL, exploring linked pages and extracting content. Use for indexing documentation sites or knowledge bases.".to_string(),
-            parameters: serde_json::to_value(schema_for!(CrawlArgs)).unwrap(),
+            parameters: serde_json::to_value(schema_for!(CrawlArgs)).expect("schema is serializable"),
         }
     }
 
@@ -53,9 +53,7 @@ impl Tool for Crawl {
         let body = response.json::<Value>().await.to_tool_result()?;
         match status {
             StatusCode::OK => Ok(body),
-            status => {
-                Err(SomeError(format!("Crawl failed with {}: {:?}", status, body)).to_tool_err())
-            }
+            status => Err(SomeError(format!("Crawl failed with {status}: {body:?}")).to_tool_err()),
         }
     }
 }

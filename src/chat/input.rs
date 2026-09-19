@@ -28,10 +28,7 @@ where
         } else if value == "/save" {
             Self::SaveChatHistory
         } else if value.contains("/import")
-            && let Some(id) = value
-                .split_whitespace()
-                .flat_map(|v| v.parse::<u16>().ok())
-                .next()
+            && let Some(id) = value.split_whitespace().find_map(|v| v.parse::<u16>().ok())
         {
             Self::ImportChatHistory(id)
         } else if value == "/tokens" {

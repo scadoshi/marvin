@@ -20,7 +20,7 @@ pub(super) trait ToToolResult<T, E: ToToolError> {
 
 impl<T, E: ToToolError> ToToolResult<T, E> for Result<T, E> {
     fn to_tool_result(self) -> Result<T, ToolError> {
-        self.map_err(|e| e.to_tool_err())
+        self.map_err(ToToolError::to_tool_err)
     }
 }
 

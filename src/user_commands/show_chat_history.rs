@@ -18,7 +18,7 @@ impl ShowChatHistory for Chat {
             return;
         }
         horizontal_line();
-        println!("Showing last {} messages", HISTORY_LEN);
+        println!("Showing last {HISTORY_LEN} messages");
         horizontal_line();
         self.clear_input();
         let messages: Vec<_> = self

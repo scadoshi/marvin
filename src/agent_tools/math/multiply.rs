@@ -2,7 +2,7 @@ use rig::{
     completion::ToolDefinition,
     tool::{Tool, ToolError},
 };
-use schemars::{schema_for, JsonSchema};
+use schemars::{JsonSchema, schema_for};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, JsonSchema)]
@@ -25,7 +25,8 @@ impl Tool for Multiply {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "returns product of two given numbers, lhs and rhs".to_string(),
-            parameters: serde_json::to_value(schema_for!(MultiplyArgs)).unwrap(),
+            parameters: serde_json::to_value(schema_for!(MultiplyArgs))
+                .expect("schema is serializable"),
         }
     }
 

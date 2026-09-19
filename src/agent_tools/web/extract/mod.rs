@@ -4,7 +4,7 @@ pub mod response;
 
 use crate::agent_tools::{SomeError, ToToolError, ToToolResult};
 
-use super::tavily::{TavilyClient, BASE_URL};
+use super::tavily::{BASE_URL, TavilyClient};
 use request::ExtractArgs;
 use reqwest::StatusCode;
 use rig::{
@@ -38,7 +38,7 @@ impl Tool for Extract {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Extract clean content from one or more URLs. Returns the full text content, optionally with images.".to_string(),
-            parameters: serde_json::to_value(schema_for!(ExtractArgs)).unwrap(),
+            parameters: serde_json::to_value(schema_for!(ExtractArgs)).expect("schema is serializable"),
         }
     }
 
@@ -54,7 +54,7 @@ impl Tool for Extract {
         match status {
             StatusCode::OK => Ok(body),
             status => {
-                Err(SomeError(format!("Extract failed with {}: {:?}", status, body)).to_tool_err())
+                Err(SomeError(format!("Extract failed with {status}: {body:?}")).to_tool_err())
             }
         }
     }

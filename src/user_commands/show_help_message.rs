@@ -11,10 +11,7 @@ impl ShowHelpMessage for Chat {
         println!("Commands:");
         println!("  /model     - switch between available Claude models");
         println!("  /tokens    - show token usage");
-        println!(
-            "  /history   - show last {} messages from chat history",
-            HISTORY_LEN
-        );
+        println!("  /history   - show last {HISTORY_LEN} messages from chat history");
         println!("  /save      - save chat history to file");
         println!("  /import    - import chat history from a saved file");
         println!("  /summarize - ask the agent to summarize the conversation");

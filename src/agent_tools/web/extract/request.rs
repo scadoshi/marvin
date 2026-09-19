@@ -29,7 +29,9 @@ pub struct ExtractArgs {
     pub query: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[schemars(description = "Number of content chunks per source (max 500 chars each). Default: 3")]
+    #[schemars(
+        description = "Number of content chunks per source (max 500 chars each). Default: 3"
+    )]
     pub chunks_per_source: Option<u8>,
 
     #[serde(skip_serializing_if = "Option::is_none")]

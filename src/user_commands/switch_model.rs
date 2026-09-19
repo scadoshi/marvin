@@ -1,5 +1,5 @@
 use crate::{
-    chat::{input::ChatInput, Chat},
+    chat::{Chat, input::ChatInput},
     ui::horizontal_line,
 };
 
