@@ -97,9 +97,8 @@ impl Chat {
             } else if input.trim() == "/exit" {
                 println!("Farewell!");
                 std::process::exit(0);
-            } else {
-                input.clear();
             }
+            input.clear();
         }
         Ok(Self {
             id,

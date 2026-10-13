@@ -15,6 +15,8 @@ pub struct SubtractArgs {
 
 pub struct Subtract;
 
+// rig's Tool trait declares these methods async.
+#[allow(clippy::unused_async_trait_impl)]
 impl Tool for Subtract {
     const NAME: &'static str = "subtract";
     type Args = SubtractArgs;

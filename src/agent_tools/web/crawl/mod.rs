@@ -28,6 +28,8 @@ impl Crawl {
     }
 }
 
+// rig's Tool trait declares these methods async.
+#[allow(clippy::unused_async_trait_impl)]
 impl Tool for Crawl {
     const NAME: &'static str = "crawl_website";
     type Args = CrawlArgs;

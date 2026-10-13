@@ -15,6 +15,8 @@ pub struct AddArgs {
 
 pub struct Add;
 
+// rig's Tool trait declares these methods async.
+#[allow(clippy::unused_async_trait_impl)]
 impl Tool for Add {
     const NAME: &'static str = "add";
     type Args = AddArgs;

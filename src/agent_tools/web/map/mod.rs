@@ -28,6 +28,8 @@ impl Map {
     }
 }
 
+// rig's Tool trait declares these methods async.
+#[allow(clippy::unused_async_trait_impl)]
 impl Tool for Map {
     const NAME: &'static str = "map_website";
     type Args = MapArgs;

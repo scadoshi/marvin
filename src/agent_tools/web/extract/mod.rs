@@ -28,6 +28,8 @@ impl Extract {
     }
 }
 
+// rig's Tool trait declares these methods async.
+#[allow(clippy::unused_async_trait_impl)]
 impl Tool for Extract {
     const NAME: &'static str = "extract_url";
     type Args = ExtractArgs;

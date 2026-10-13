@@ -15,6 +15,8 @@ pub struct DivideArgs {
 
 pub struct Divide;
 
+// rig's Tool trait declares these methods async.
+#[allow(clippy::unused_async_trait_impl)]
 impl Tool for Divide {
     const NAME: &'static str = "divide";
     type Args = DivideArgs;

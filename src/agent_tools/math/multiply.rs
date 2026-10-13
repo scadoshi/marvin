@@ -15,6 +15,8 @@ pub struct MultiplyArgs {
 
 pub struct Multiply;
 
+// rig's Tool trait declares these methods async.
+#[allow(clippy::unused_async_trait_impl)]
 impl Tool for Multiply {
     const NAME: &'static str = "multiply";
     type Args = MultiplyArgs;
