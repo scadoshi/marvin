@@ -1,8 +1,6 @@
 # Anthropic Deprecated Models in Rig
 
-**Date discovered**: 2026-02-05
-**Status**: Fixed via PR to Rig repository
-**GitHub Issue**: [#1370](https://github.com/0xPlaygrounds/rig/issues/1370)
+**Date discovered**: 2026-02-05 **Status**: Fixed via PR to Rig repository **GitHub Issue**: [#1370](https://github.com/0xPlaygrounds/rig/issues/1370)
 
 ## Summary
 

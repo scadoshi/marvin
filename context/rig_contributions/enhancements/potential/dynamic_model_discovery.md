@@ -3,8 +3,7 @@
 
 # Dynamic Model Discovery via Anthropic's List Models API
 
-**Status**: Enhancement idea
-**Related to**: Issue #1370 (deprecated model constants)
+**Status**: Enhancement idea **Related to**: Issue #1370 (deprecated model constants)
 
 ## Problem
 
