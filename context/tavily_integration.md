@@ -8,19 +8,19 @@ Tavily is an AI-optimized search API designed specifically for AI agents and LLM
 
 ### Core APIs
 
-1. **Tavily Search**: Execute web searches optimized for AI consumption
-2. **Tavily Extract**: Extract clean content from one or more URLs
-3. **Tavily Crawl**: Graph-based website traversal for comprehensive content discovery
-4. **Tavily Map**: Generate complete site maps by intelligently traversing websites
-5. **Tavily Research**: Automated comprehensive research with multi-search synthesis
+1. Tavily Search: Execute web searches optimized for AI consumption
+2. Tavily Extract: Extract clean content from one or more URLs
+3. Tavily Crawl: Graph-based website traversal for comprehensive content discovery
+4. Tavily Map: Generate complete site maps by intelligently traversing websites
+5. Tavily Research: Automated comprehensive research with multi-search synthesis
 
 ### Key Features
 
-- **AI-optimized results**: Search results formatted for LLM processing
-- **Real-time data**: Access to current web information
-- **Content extraction**: Clean, structured content from web pages
-- **Parallel crawling**: Explore hundreds of paths simultaneously
-- **Research synthesis**: Multi-source analysis with detailed reports
+- AI-optimized results: Search results formatted for LLM processing
+- Real-time data: Access to current web information
+- Content extraction: Clean, structured content from web pages
+- Parallel crawling: Explore hundreds of paths simultaneously
+- Research synthesis: Multi-source analysis with detailed reports
 
 ## API Credentials & Pricing
 
@@ -48,8 +48,8 @@ Tavily is an AI-optimized search API designed specifically for AI agents and LLM
 - Requires manual HTTP client setup
 
 ### SDK Options
-- **Python SDK**: `pip install tavily-python`
-- **JavaScript/TypeScript SDK**: `npm install tavily`
+- Python SDK: `pip install tavily-python`
+- `JavaScript/TypeScript SDK`: `npm install tavily`
 
 ### Rust Integration (for Marvin)
 Since there's no official Rust SDK (as of 2026-02), use:
