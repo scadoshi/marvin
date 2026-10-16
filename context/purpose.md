@@ -10,10 +10,10 @@ marvin is a personal learning project for understanding the Rig framework. The g
 - **Stay curious** — each feature should teach something new about Rig or Rust
 
 ## Tech stack
-- **Language:** Rust (2024 edition)
-- **AI framework:** rig-core 0.31.0
-- **Provider:** Anthropic (Claude)
-- **Async runtime:** Tokio
+- Language: Rust (2024 edition)
+- AI framework: rig-core 0.31.0
+- Provider: Anthropic (Claude)
+- Async runtime: Tokio
 
 ## Architecture overview
 - **CLI REPL** — user types messages and commands, agent responds

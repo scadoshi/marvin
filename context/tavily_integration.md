@@ -30,8 +30,8 @@ Tavily is an AI-optimized search API designed specifically for AI agents and LLM
 3. Store in `.env`: `TAVILY_API_KEY=tvly-...`
 
 ### Rate Limits
-- **Development**: Rate limits apply (check docs for current limits)
-- **Production**: Higher rate limits based on plan
+- Development: Rate limits apply (check docs for current limits)
+- Production: Higher rate limits based on plan
 - See: https://docs.tavily.com/documentation/rate-limits.md
 
 ### Pricing

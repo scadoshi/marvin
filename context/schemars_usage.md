@@ -378,9 +378,9 @@ println!("{}", serde_json::to_string_pretty(&schema).unwrap());
 
 ## Resources
 
-- **Crate docs**: https://docs.rs/schemars/
-- **JSON Schema spec**: https://json-schema.org/
-- **Rig Tool trait**: https://docs.rs/rig-core/latest/rig/tool/trait.Tool.html
+- Crate docs: https://docs.rs/schemars/
+- JSON Schema spec: https://json-schema.org/
+- Rig Tool trait: https://docs.rs/rig-core/latest/rig/tool/trait.Tool.html
 
 ## Why This Matters for Marvin
 
