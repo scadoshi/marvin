@@ -1,13 +1,13 @@
-# Purpose — marvin
+# Purpose: marvin
 
 ## What this project is
 marvin is a personal learning project for understanding the Rig framework. The goal is to learn by building a real CLI chatbot application, exploring Rig's APIs incrementally through implementing features.
 
 ## Why this project exists
-- **Learn Rig framework** — understand how Rig works by building with it, not just reading docs
-- **Explore AI patterns** — experiment with conversation management, tool use, streaming, etc.
-- **Practice Rust architecture** — iteratively improve code structure as complexity grows
-- **Stay curious** — each feature should teach something new about Rig or Rust
+- Learn Rig framework: understand how Rig works by building with it, not just reading docs
+- Explore AI patterns: experiment with conversation management, tool use, streaming, etc.
+- Practice Rust architecture: iteratively improve code structure as complexity grows
+- Stay curious: each feature should teach something new about Rig or Rust
 
 ## Tech stack
 - Language: Rust (2024 edition)
@@ -16,18 +16,18 @@ marvin is a personal learning project for understanding the Rig framework. The g
 - Async runtime: Tokio
 
 ## Architecture overview
-- **CLI REPL** — user types messages and commands, agent responds
-- **Command pattern** — each command (`/model`, `/history`, etc.) is a separate module
-- **Chat state** — manages conversation history, current input, and agent instance
-- **Config** — loads environment variables (API key)
-- **Preamble** — system prompt loaded from `src/chat/preamble.txt` at compile time
+- CLI REPL: user types messages and commands, agent responds
+- Command pattern: each command (`/model`, `/history`, etc.) is a separate module
+- Chat state: manages conversation history, current input, and agent instance
+- Config: loads environment variables (API key)
+- Preamble: system prompt loaded from `src/chat/preamble.txt` at compile time
 
 ## AI assistant rules
 
 ### Do NOT write code
 - **Never** write, edit, or implement code for the user
 - Suggest ideas, outline approaches, point out bugs
-- Let the user write the code — they're learning
+- Let the user write the code, since they're learning
 
 ### Educational first
 - Each suggestion should teach something about Rig or Rust

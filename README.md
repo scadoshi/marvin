@@ -45,8 +45,8 @@ The AI agent can invoke the following tools during conversation:
 
 1. Clone the repo and make sure you have Rust installed (`rustup` / `cargo`).
 2. Copy `.env.example` to `.env` and fill in your values:
-   - `ANTHROPIC_API_KEY` — your Anthropic API key
-   - `TAVILY_API_KEY` — your Tavily API key (for web tools)
+   - `ANTHROPIC_API_KEY`: your Anthropic API key
+   - `TAVILY_API_KEY`: your Tavily API key (for web tools)
 3. Build and run:
 
 ```sh
@@ -59,4 +59,4 @@ This project exists to learn Rig by reading its source, experimenting with its A
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).
