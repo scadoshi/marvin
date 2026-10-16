@@ -25,7 +25,7 @@ rig_contributions/
 ## Current Contributions
 
 ### Issues
-- **[PR Submitted]** `anthropic_deprecated_models.md` - Fixed deprecated Anthropic model constants causing 404 errors (Issue #1370)
+- **[PR Submitted]** `anthropic_deprecated_models.md`: Fixed deprecated Anthropic model constants causing 404 errors (Issue #1370)
 
 ### Enhancements
 - None yet

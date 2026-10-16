@@ -8,19 +8,19 @@ Tavily is an AI-optimized search API designed specifically for AI agents and LLM
 
 ### Core APIs
 
-1. **Tavily Search** - Execute web searches optimized for AI consumption
-2. **Tavily Extract** - Extract clean content from one or more URLs
-3. **Tavily Crawl** - Graph-based website traversal for comprehensive content discovery
-4. **Tavily Map** - Generate complete site maps by intelligently traversing websites
-5. **Tavily Research** - Automated comprehensive research with multi-search synthesis
+1. **Tavily Search**: Execute web searches optimized for AI consumption
+2. **Tavily Extract**: Extract clean content from one or more URLs
+3. **Tavily Crawl**: Graph-based website traversal for comprehensive content discovery
+4. **Tavily Map**: Generate complete site maps by intelligently traversing websites
+5. **Tavily Research**: Automated comprehensive research with multi-search synthesis
 
 ### Key Features
 
-- **AI-optimized results** - Search results formatted for LLM processing
-- **Real-time data** - Access to current web information
-- **Content extraction** - Clean, structured content from web pages
-- **Parallel crawling** - Explore hundreds of paths simultaneously
-- **Research synthesis** - Multi-source analysis with detailed reports
+- **AI-optimized results**: Search results formatted for LLM processing
+- **Real-time data**: Access to current web information
+- **Content extraction**: Clean, structured content from web pages
+- **Parallel crawling**: Explore hundreds of paths simultaneously
+- **Research synthesis**: Multi-source analysis with detailed reports
 
 ## API Credentials & Pricing
 
@@ -48,8 +48,8 @@ Tavily is an AI-optimized search API designed specifically for AI agents and LLM
 - Requires manual HTTP client setup
 
 ### SDK Options
-- **Python SDK** - `pip install tavily-python`
-- **JavaScript/TypeScript SDK** - `npm install tavily`
+- **Python SDK**: `pip install tavily-python`
+- **JavaScript/TypeScript SDK**: `npm install tavily`
 
 ### Rust Integration (for Marvin)
 Since there's no official Rust SDK (as of 2026-02), use:
@@ -65,19 +65,19 @@ Since there's no official Rust SDK (as of 2026-02), use:
 **Endpoint**: `POST https://api.tavily.com/search`
 
 **Key Parameters**:
-- `query` (required) - Search query string
-- `search_depth` - "basic" or "advanced"
-- `max_results` - Number of results to return (default: 5)
-- `include_answer` - Generate direct answer from results
-- `include_domains` - Filter to specific domains
-- `exclude_domains` - Exclude specific domains
+- `query` (required): Search query string
+- `search_depth`: "basic" or "advanced"
+- `max_results`: Number of results to return (default: 5)
+- `include_answer`: Generate direct answer from results
+- `include_domains`: Filter to specific domains
+- `exclude_domains`: Exclude specific domains
 
 **Response**: Array of results with:
-- `title` - Page title
-- `url` - Page URL
-- `content` - Extracted relevant content
-- `score` - Relevance score
-- `raw_content` - Full page text (optional)
+- `title`: Page title
+- `url`: Page URL
+- `content`: Extracted relevant content
+- `score`: Relevance score
+- `raw_content`: Full page text (optional)
 
 **Best Practices**:
 - Use clear, specific queries
@@ -91,9 +91,9 @@ Since there's no official Rust SDK (as of 2026-02), use:
 **Endpoint**: `POST https://api.tavily.com/extract`
 
 **Key Parameters**:
-- `urls` (required) - Array of URLs to extract from
-- `include_images` - Include image URLs in response
-- `include_raw_content` - Include full HTML
+- `urls` (required): Array of URLs to extract from
+- `include_images`: Include image URLs in response
+- `include_raw_content`: Include full HTML
 
 **Response**: Array of extracted content per URL
 
@@ -114,11 +114,11 @@ Since there's no official Rust SDK (as of 2026-02), use:
 **Endpoint**: `POST https://api.tavily.com/crawl`
 
 **Key Parameters**:
-- `url` (required) - Starting URL
-- `max_depth` - How deep to crawl (default: 3)
-- `max_pages` - Maximum pages to crawl
-- `include_patterns` - URL patterns to include
-- `exclude_patterns` - URL patterns to exclude
+- `url` (required): Starting URL
+- `max_depth`: How deep to crawl (default: 3)
+- `max_pages`: Maximum pages to crawl
+- `include_patterns`: URL patterns to include
+- `exclude_patterns`: URL patterns to exclude
 
 **Response**: Comprehensive crawl results with discovered pages and content
 
@@ -141,10 +141,10 @@ Since there's no official Rust SDK (as of 2026-02), use:
 - Status: `GET https://api.tavily.com/research/{request_id}`
 
 **Key Parameters**:
-- `query` (required) - Research topic/question
-- `model` - LLM model for synthesis (e.g., "gpt-4")
-- `max_results` - Sources to analyze
-- `output_format` - "markdown", "json", etc.
+- `query` (required): Research topic/question
+- `model`: LLM model for synthesis (e.g., "gpt-4")
+- `max_results`: Sources to analyze
+- `output_format`: "markdown", "json", etc.
 
 **Response**: Detailed research report with:
 - Synthesized findings
