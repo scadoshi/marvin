@@ -1,10 +1,9 @@
 pub mod math;
 pub mod web;
 pub use math::math_tools;
+use rig::tool::ToolError;
 use thiserror::Error;
 pub use web::WebTools;
-
-use rig::tool::ToolError;
 
 pub(super) trait ToToolError: std::error::Error + Send + Sync + 'static + Sized {
     fn to_tool_err(self) -> ToolError {

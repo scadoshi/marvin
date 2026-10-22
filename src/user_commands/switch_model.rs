@@ -1,7 +1,6 @@
-use crate::{
-    chat::{Chat, input::ChatInput},
-    ui::horizontal_line,
-};
+use crate::chat::Chat;
+use crate::chat::input::ChatInput;
+use crate::ui::horizontal_line;
 
 pub trait SwitchModel {
     fn switch_model(&mut self) -> anyhow::Result<()>;

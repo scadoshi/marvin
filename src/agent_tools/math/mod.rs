@@ -1,5 +1,9 @@
-use crate::agent_tools::math::{add::Add, divide::Divide, multiply::Multiply, subtract::Subtract};
 use rig::tool::ToolDyn;
+
+use crate::agent_tools::math::add::Add;
+use crate::agent_tools::math::divide::Divide;
+use crate::agent_tools::math::multiply::Multiply;
+use crate::agent_tools::math::subtract::Subtract;
 
 pub mod add;
 pub mod divide;

@@ -2,18 +2,18 @@ pub mod request;
 #[allow(dead_code)]
 pub mod response;
 
-use super::tavily::{BASE_URL, TavilyClient};
-use crate::agent_tools::{SomeError, ToToolError, ToToolResult};
+use std::sync::Arc;
+
 use request::SearchArgs;
 use reqwest::StatusCode;
-use rig::{
-    completion::ToolDefinition,
-    tool::{Tool, ToolError},
-};
+use rig::completion::ToolDefinition;
+use rig::tool::{Tool, ToolError};
 use schemars::schema_for;
 use serde_json::Value;
-use std::sync::Arc;
 use url::Url;
+
+use super::tavily::{BASE_URL, TavilyClient};
+use crate::agent_tools::{SomeError, ToToolError, ToToolResult};
 
 const SEARCH_PATH: &str = "/search";
 

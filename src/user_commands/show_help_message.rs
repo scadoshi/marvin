@@ -1,4 +1,6 @@
-use crate::{chat::Chat, ui::horizontal_line, user_commands::show_chat_history::HISTORY_LEN};
+use crate::chat::Chat;
+use crate::ui::horizontal_line;
+use crate::user_commands::show_chat_history::HISTORY_LEN;
 
 pub trait ShowHelpMessage {
     fn show_help_message(&mut self);

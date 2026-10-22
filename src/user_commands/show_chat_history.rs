@@ -1,6 +1,7 @@
 use rig::message::{AssistantContent, Message, UserContent};
 
-use crate::{chat::Chat, ui::horizontal_line};
+use crate::chat::Chat;
+use crate::ui::horizontal_line;
 
 pub const HISTORY_LEN: usize = 10;
 

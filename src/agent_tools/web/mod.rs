@@ -1,9 +1,10 @@
+use std::sync::Arc;
+
 use crawl::Crawl;
 use extract::Extract;
 use map::Map;
 use rig::tool::ToolDyn;
 use search::Search;
-use std::sync::Arc;
 use tavily::TavilyClient;
 
 pub mod crawl;

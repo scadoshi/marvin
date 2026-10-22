@@ -1,7 +1,5 @@
-use rig::{
-    completion::ToolDefinition,
-    tool::{Tool, ToolError},
-};
+use rig::completion::ToolDefinition;
+use rig::tool::{Tool, ToolError};
 use schemars::{JsonSchema, schema_for};
 use serde::{Deserialize, Serialize};
 

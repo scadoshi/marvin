@@ -1,5 +1,7 @@
-use crate::{chat::Chat, ui::horizontal_line};
 use rig::message::Message;
+
+use crate::chat::Chat;
+use crate::ui::horizontal_line;
 
 pub trait CompactContext {
     fn compact_context(&mut self) -> impl Future<Output = anyhow::Result<()>>;

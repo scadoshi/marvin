@@ -1,8 +1,7 @@
-use crate::{
-    anthropic::{ModelInfo, ModelsResponse},
-    chat::config::Config,
-};
 use reqwest::Client;
+
+use crate::anthropic::{ModelInfo, ModelsResponse};
+use crate::chat::config::Config;
 
 pub trait GetAnthropicModels {
     fn get_models(&self) -> impl Future<Output = anyhow::Result<Vec<ModelInfo>>>;

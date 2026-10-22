@@ -1,27 +1,25 @@
 pub mod config;
 pub mod input;
-pub use input::ChatInput;
+use std::collections::HashSet;
+use std::sync::Arc;
 
-use crate::{
-    agent_tools::{WebTools, math_tools, web::tavily::TavilyClient},
-    anthropic::{ModelInfo, get_models::GetAnthropicModels},
-    chat::config::Config,
-    ui::{horizontal_line, welcome_message},
-};
 use futures::StreamExt;
-use rig::{
-    agent::{Agent, MultiTurnStreamItem},
-    client::CompletionClient,
-    completion::Chat as ChatTrait,
-    message::Message,
-    providers::anthropic::{
-        Client,
-        completion::CompletionModel,
-        streaming::{PartialUsage, StreamingCompletionResponse},
-    },
-    streaming::{StreamedAssistantContent, StreamingChat},
-};
-use std::{collections::HashSet, sync::Arc};
+pub use input::ChatInput;
+use rig::agent::{Agent, MultiTurnStreamItem};
+use rig::client::CompletionClient;
+use rig::completion::Chat as ChatTrait;
+use rig::message::Message;
+use rig::providers::anthropic::Client;
+use rig::providers::anthropic::completion::CompletionModel;
+use rig::providers::anthropic::streaming::{PartialUsage, StreamingCompletionResponse};
+use rig::streaming::{StreamedAssistantContent, StreamingChat};
+
+use crate::agent_tools::web::tavily::TavilyClient;
+use crate::agent_tools::{WebTools, math_tools};
+use crate::anthropic::ModelInfo;
+use crate::anthropic::get_models::GetAnthropicModels;
+use crate::chat::config::Config;
+use crate::ui::{horizontal_line, welcome_message};
 
 pub static PREAMBLE: &str = include_str!("preamble.txt");
 

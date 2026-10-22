@@ -1,4 +1,5 @@
-use crate::{chat::Chat, ui::horizontal_line};
+use crate::chat::Chat;
+use crate::ui::horizontal_line;
 
 pub trait ClearContext {
     fn clear_context(&mut self) -> anyhow::Result<()>;

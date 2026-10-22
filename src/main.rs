@@ -5,7 +5,8 @@ mod runner;
 mod ui;
 mod user_commands;
 
-use crate::{chat::Chat, runner::Runner};
+use crate::chat::Chat;
+use crate::runner::Runner;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
