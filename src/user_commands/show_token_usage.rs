@@ -12,11 +12,9 @@ trait Formatted {
 impl Formatted for usize {
     fn formatted(self) -> String {
         let mut str = self.to_string();
-        (1..str.len())
-            .rev()
-            .skip(2)
-            .step_by(3)
-            .for_each(|i| str.insert(i, ','));
+        for i in (1..str.len()).rev().skip(2).step_by(3) {
+            str.insert(i, ',');
+        }
         str
     }
 }
