@@ -6,11 +6,10 @@ mod ui;
 mod user_commands;
 
 use crate::chat::Chat;
-use crate::runner::Runner;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let state = Chat::new().await?;
-    Runner::run(state).await?;
+    runner::run(state).await?;
     Ok(())
 }

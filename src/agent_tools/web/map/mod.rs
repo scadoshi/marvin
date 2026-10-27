@@ -13,7 +13,7 @@ use serde_json::Value;
 use url::Url;
 
 use super::tavily::{BASE_URL, TavilyClient};
-use crate::agent_tools::{SomeError, ToToolError, ToToolResult};
+use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 
 const MAP_PATH: &str = "/map";
 
@@ -45,16 +45,18 @@ impl Tool for Map {
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         let url = Url::parse(BASE_URL)
-            .to_tool_result()?
+            .into_tool_result()?
             .join(MAP_PATH)
-            .to_tool_result()?;
-        let json = serde_json::to_value(args).to_tool_result()?;
-        let response = self.client.post(url, json).await.to_tool_result()?;
+            .into_tool_result()?;
+        let json = serde_json::to_value(args).into_tool_result()?;
+        let response = self.client.post(url, json).await.into_tool_result()?;
         let status = response.status();
-        let body = response.json::<Value>().await.to_tool_result()?;
+        let body = response.json::<Value>().await.into_tool_result()?;
         match status {
             StatusCode::OK => Ok(body),
-            status => Err(SomeError(format!("Crawl failed with {status}: {body:?}")).to_tool_err()),
+            status => {
+                Err(ToolFailure(format!("Crawl failed with {status}: {body:?}")).into_tool_error())
+            }
         }
     }
 }

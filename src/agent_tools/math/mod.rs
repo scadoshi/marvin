@@ -10,7 +10,7 @@ pub mod divide;
 pub mod multiply;
 pub mod subtract;
 
-pub fn math_tools() -> Vec<Box<dyn ToolDyn>> {
+pub fn tools() -> Vec<Box<dyn ToolDyn>> {
     vec![
         Box::new(Add),
         Box::new(Subtract),

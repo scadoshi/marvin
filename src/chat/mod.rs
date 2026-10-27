@@ -15,9 +15,8 @@ use rig::providers::anthropic::streaming::{PartialUsage, StreamingCompletionResp
 use rig::streaming::{StreamedAssistantContent, StreamingChat};
 
 use crate::agent_tools::web::tavily::TavilyClient;
-use crate::agent_tools::{WebTools, math_tools};
-use crate::anthropic::ModelInfo;
-use crate::anthropic::get_models::GetAnthropicModels;
+use crate::agent_tools::{math, web};
+use crate::anthropic::{self, ModelInfo};
 use crate::chat::config::Config;
 use crate::ui::{horizontal_line, welcome_message};
 
@@ -64,7 +63,7 @@ impl Chat {
         welcome_message(id);
         let config = Config::from_env()?;
         let tavily_client = Arc::new(TavilyClient::from(&config));
-        let model_options = config.get_models().await?;
+        let model_options = anthropic::fetch_models(config.anthropic_api_key()).await?;
         let agent: Agent<CompletionModel>;
         let mut input = String::new();
         println!("Current model: not set");
@@ -86,8 +85,8 @@ impl Chat {
                     .name("Marvin")
                     .preamble(PREAMBLE)
                     .max_tokens(*max_tokens)
-                    .tools(math_tools())
-                    .tools(tavily_client.web_tools())
+                    .tools(math::tools())
+                    .tools(web::tools(&tavily_client))
                     .default_max_turns(100)
                     .build();
                 horizontal_line();
@@ -130,8 +129,8 @@ impl Chat {
             .agent(model.id)
             .preamble(PREAMBLE)
             .max_tokens(model.max_tokens)
-            .tools(math_tools())
-            .tools(self.tavily_client().web_tools())
+            .tools(math::tools())
+            .tools(web::tools(&self.tavily_client))
             .build();
         Ok(())
     }
@@ -255,8 +254,5 @@ impl Chat {
     }
     pub fn add_output_tokens_used(&mut self, output_tokens: usize) {
         self.total_output_tokens_used += output_tokens;
-    }
-    pub fn tavily_client(&self) -> Arc<TavilyClient> {
-        self.tavily_client.clone()
     }
 }

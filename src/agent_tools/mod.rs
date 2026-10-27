@@ -1,28 +1,26 @@
 pub mod math;
 pub mod web;
-pub use math::math_tools;
 use rig::tool::ToolError;
 use thiserror::Error;
-pub use web::WebTools;
 
-pub(super) trait ToToolError: std::error::Error + Send + Sync + 'static + Sized {
-    fn to_tool_err(self) -> ToolError {
+pub(super) trait ToolErrorExt: std::error::Error + Send + Sync + 'static + Sized {
+    fn into_tool_error(self) -> ToolError {
         ToolError::ToolCallError(Box::new(self))
     }
 }
 
-impl<E> ToToolError for E where E: std::error::Error + Send + Sync + 'static + Sized {}
+impl<E> ToolErrorExt for E where E: std::error::Error + Send + Sync + 'static + Sized {}
 
-pub(super) trait ToToolResult<T, E: ToToolError> {
-    fn to_tool_result(self) -> Result<T, ToolError>;
+pub(super) trait ToolResultExt<T, E: ToolErrorExt> {
+    fn into_tool_result(self) -> Result<T, ToolError>;
 }
 
-impl<T, E: ToToolError> ToToolResult<T, E> for Result<T, E> {
-    fn to_tool_result(self) -> Result<T, ToolError> {
-        self.map_err(ToToolError::to_tool_err)
+impl<T, E: ToolErrorExt> ToolResultExt<T, E> for Result<T, E> {
+    fn into_tool_result(self) -> Result<T, ToolError> {
+        self.map_err(ToolErrorExt::into_tool_error)
     }
 }
 
 #[derive(Debug, Error)]
 #[error("{0}")]
-pub(super) struct SomeError(String);
+pub(super) struct ToolFailure(String);
