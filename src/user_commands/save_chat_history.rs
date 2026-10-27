@@ -1,5 +1,10 @@
 //! `/save`: writes the history to disk.
 
+#![expect(
+    clippy::print_stdout,
+    reason = "marvin is a terminal chat, so printing is its interface"
+)]
+
 use crate::chat::{CHATS_DIR_NAME, Chat};
 use crate::ui;
 

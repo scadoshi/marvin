@@ -1,5 +1,10 @@
 //! `/model`: switches the chat to another model.
 
+#![expect(
+    clippy::print_stdout,
+    reason = "marvin is a terminal chat, so printing is its interface"
+)]
+
 use crate::chat::Chat;
 use crate::chat::input::ChatInput;
 use crate::ui;

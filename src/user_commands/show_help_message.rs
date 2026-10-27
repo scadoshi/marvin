@@ -1,5 +1,10 @@
 //! `/help`: lists the slash commands.
 
+#![expect(
+    clippy::print_stdout,
+    reason = "marvin is a terminal chat, so printing is its interface"
+)]
+
 use crate::chat::Chat;
 use crate::ui;
 use crate::user_commands::show_chat_history::HISTORY_LEN;

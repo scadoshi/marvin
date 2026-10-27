@@ -1,5 +1,10 @@
 //! `/summarize`: asks the model to summarize the chat.
 
+#![expect(
+    clippy::print_stdout,
+    reason = "marvin is a terminal chat, so printing is its interface"
+)]
+
 use rig::message::Message;
 
 use crate::chat::Chat;

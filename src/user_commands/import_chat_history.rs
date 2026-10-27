@@ -1,5 +1,10 @@
 //! `/import <id>`: loads a saved chat.
 
+#![expect(
+    clippy::print_stdout,
+    reason = "marvin is a terminal chat, so printing is its interface"
+)]
+
 use anyhow::Context;
 use rig::message::Message;
 

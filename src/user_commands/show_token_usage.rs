@@ -1,5 +1,10 @@
 //! `/tokens`: prints the token totals.
 
+#![expect(
+    clippy::print_stdout,
+    reason = "marvin is a terminal chat, so printing is its interface"
+)]
+
 use crate::chat::Chat;
 use crate::ui;
 

@@ -1,5 +1,10 @@
 //! `/compact`: replaces the history with a summary the model writes.
 
+#![expect(
+    clippy::print_stdout,
+    reason = "marvin is a terminal chat, so printing is its interface"
+)]
+
 use rig::message::Message;
 
 use crate::chat::Chat;

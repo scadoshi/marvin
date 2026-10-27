@@ -1,5 +1,10 @@
 //! Terminal output shared by the chat and its commands.
 
+#![expect(
+    clippy::print_stdout,
+    reason = "marvin is a terminal chat, so printing is its interface"
+)]
+
 use std::io::{self, Write};
 
 /// Characters in a [`horizontal_line`].

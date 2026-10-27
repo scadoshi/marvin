@@ -1,5 +1,11 @@
 //! The chat session: the agent, the message history and token counts, and streaming replies to the terminal.
 
+#![expect(
+    clippy::print_stdout,
+    clippy::print_stderr,
+    reason = "marvin is a terminal chat, so printing is its interface"
+)]
+
 pub(crate) mod config;
 pub(crate) mod input;
 use std::collections::HashSet;

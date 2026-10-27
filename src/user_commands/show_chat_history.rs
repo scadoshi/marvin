@@ -1,5 +1,10 @@
 //! `/history`: prints the latest messages, shortened.
 
+#![expect(
+    clippy::print_stdout,
+    reason = "marvin is a terminal chat, so printing is its interface"
+)]
+
 use rig::message::{AssistantContent, Message, UserContent};
 
 use crate::chat::Chat;
