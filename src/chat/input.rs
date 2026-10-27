@@ -20,7 +20,8 @@ where
     T: AsRef<str>,
 {
     fn from(value: T) -> Self {
-        let value = value.as_ref().trim().to_lowercase();
+        let message = value.as_ref().trim();
+        let value = message.to_lowercase();
         if value == "/exit" {
             Self::ExitProcess
         } else if value == "/history" {
@@ -46,7 +47,7 @@ where
         } else if value.is_empty() {
             Self::None
         } else {
-            Self::SendMessage(value)
+            Self::SendMessage(message.to_owned())
         }
     }
 }
@@ -103,6 +104,13 @@ mod tests {
     #[test]
     fn import_without_an_id_is_a_message() {
         assert!(matches!(parse("/import"), ChatInput::SendMessage(m) if m == "/import"));
+    }
+
+    #[test]
+    fn a_message_keeps_its_case() {
+        assert!(
+            matches!(parse("Explain Rust's Arc<T> to Scotty"), ChatInput::SendMessage(m) if m == "Explain Rust's Arc<T> to Scotty")
+        );
     }
 
     #[test]
