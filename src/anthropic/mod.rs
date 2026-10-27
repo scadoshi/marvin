@@ -7,9 +7,6 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize, Clone)]
 struct ModelsResponse {
     data: Vec<ModelInfo>,
-    //first_id: String,
-    //has_more: bool,
-    //last_id: String,
 }
 
 /// One model from the list.
@@ -26,6 +23,9 @@ pub(crate) struct ModelInfo {
 /// Where the Anthropic API lives.
 pub(crate) const API_BASE: &str = "https://api.anthropic.com";
 
+/// The most models the API returns on one page; asking for this many fetches them all at once.
+const MODELS_PAGE_LIMIT: u16 = 1000;
+
 /// Lists the models the API key can use.
 ///
 /// # Errors
@@ -33,7 +33,7 @@ pub(crate) const API_BASE: &str = "https://api.anthropic.com";
 /// Returns an error if the request fails, the API answers with a non-success status, or the body is not a model list.
 pub(crate) async fn fetch_models(base_url: &str, api_key: &str) -> anyhow::Result<Vec<ModelInfo>> {
     let response = Client::new()
-        .get(format!("{base_url}/v1/models"))
+        .get(format!("{base_url}/v1/models?limit={MODELS_PAGE_LIMIT}"))
         .header("anthropic-version", "2023-06-01")
         .header("X-Api-Key", api_key)
         .send()
@@ -55,7 +55,7 @@ mod tests {
 
     #[tokio::test]
     async fn models_are_read_from_the_list() {
-        let (base_url, _) = test_server::serve_once(
+        let (base_url, request) = test_server::serve_once(
             200,
             r#"{"data":[{"id":"claude-test","created_at":"2026-01-01T00:00:00Z","display_name":"Claude Test","type":"model","max_tokens":1024}]}"#,
         )
@@ -63,6 +63,8 @@ mod tests {
         let models = fetch_models(&base_url, "key").await.unwrap();
         assert_eq!(models.len(), 1);
         assert_eq!(models[0].id, "claude-test");
+        let line = request.await.unwrap().line;
+        assert!(line.starts_with("GET /v1/models?limit=1000 "), "{line}");
     }
 
     #[tokio::test]

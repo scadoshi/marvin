@@ -4,8 +4,17 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::task::JoinHandle;
 
-/// Serves one request on a free local port. Returns the base URL and a handle that resolves to the request body.
-pub(crate) async fn serve_once(status: u16, body: &'static str) -> (String, JoinHandle<String>) {
+/// What the server was asked.
+#[derive(Debug)]
+pub(crate) struct Request {
+    /// The request line, such as `GET /v1/models HTTP/1.1`.
+    pub(crate) line: String,
+    /// The request body.
+    pub(crate) body: String,
+}
+
+/// Serves one request on a free local port. Returns the base URL and a handle that resolves to the request.
+pub(crate) async fn serve_once(status: u16, body: &'static str) -> (String, JoinHandle<Request>) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let base_url = format!("http://{}", listener.local_addr().unwrap());
     let handle = tokio::spawn(async move {
@@ -19,8 +28,9 @@ pub(crate) async fn serve_once(status: u16, body: &'static str) -> (String, Join
                 break i + 4;
             }
         };
-        let head = String::from_utf8_lossy(&request[..body_start]).to_lowercase();
+        let head = String::from_utf8_lossy(&request[..body_start]).into_owned();
         let content_length: usize = head
+            .to_lowercase()
             .lines()
             .find_map(|line| line.strip_prefix("content-length:"))
             .map_or(0, |len| len.trim().parse().unwrap());
@@ -33,7 +43,10 @@ pub(crate) async fn serve_once(status: u16, body: &'static str) -> (String, Join
             body.len()
         );
         socket.write_all(response.as_bytes()).await.unwrap();
-        String::from_utf8_lossy(&request[body_start..]).into_owned()
+        Request {
+            line: head.lines().next().unwrap_or_default().to_owned(),
+            body: String::from_utf8_lossy(&request[body_start..]).into_owned(),
+        }
     });
     (base_url, handle)
 }

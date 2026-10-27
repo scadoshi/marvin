@@ -345,7 +345,7 @@ mod tests {
         let (base_url, request) = test_server::serve_once(400, REJECTED).await;
         let mut chat = chat_against(&base_url);
         chat.stream(Message::user("hello")).await;
-        let messages = sent_messages(&request.await.unwrap());
+        let messages = sent_messages(&request.await.unwrap().body);
         assert_eq!(messages.len(), 1, "{messages:#?}");
         assert_eq!(chat.chat_history().len(), 1, "the message is still kept");
     }
@@ -355,7 +355,7 @@ mod tests {
         let (base_url, request) = test_server::serve_once(400, REJECTED).await;
         let mut chat = chat_against(&base_url);
         assert!(chat.send(Message::user("hello")).await.is_err());
-        let messages = sent_messages(&request.await.unwrap());
+        let messages = sent_messages(&request.await.unwrap().body);
         assert_eq!(messages.len(), 1, "{messages:#?}");
     }
 
