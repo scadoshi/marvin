@@ -1,6 +1,7 @@
 pub mod config;
 pub mod input;
 use std::collections::HashSet;
+use std::io::BufRead;
 use std::sync::Arc;
 
 use futures::StreamExt;
@@ -74,8 +75,34 @@ fn agent(
         .build()
 }
 
+/// Asks for a model by its number until one is picked. `None` on `/exit` or the end of input.
+fn select_model<'models>(
+    reader: &mut impl BufRead,
+    model_options: &'models [ModelInfo],
+) -> std::io::Result<Option<&'models ModelInfo>> {
+    let mut input = String::new();
+    loop {
+        println!("Select a model");
+        horizontal_line();
+        input.clear();
+        if reader.read_line(&mut input)? == 0 || input.trim() == "/exit" {
+            return Ok(None);
+        }
+        if let Some(model) = input
+            .trim()
+            .parse::<usize>()
+            .ok()
+            .and_then(|n| n.checked_sub(1))
+            .and_then(|i| model_options.get(i))
+        {
+            return Ok(Some(model));
+        }
+    }
+}
+
 impl Chat {
-    pub async fn new() -> anyhow::Result<Self> {
+    /// Starts a chat: loads the config and models and asks which model to use. `None` when the user leaves instead.
+    pub async fn new() -> anyhow::Result<Option<Self>> {
         let id = next_chat_id()?;
         welcome_message(id);
         let config = Config::from_env()?;
@@ -83,33 +110,18 @@ impl Chat {
         let model_options =
             anthropic::fetch_models(anthropic::API_BASE, config.anthropic_api_key()).await?;
         let client = Client::new(config.anthropic_api_key())?;
-        let agent: Agent<CompletionModel>;
-        let mut input = String::new();
         println!("Current model: not set");
         for (i, model) in model_options.iter().enumerate() {
             println!("{}. {}", i + 1, model.display_name);
         }
         horizontal_line();
-        loop {
-            println!("Select a model");
-            horizontal_line();
-            std::io::stdin().read_line(&mut input)?;
-            if let Some(model) = model_options
-                .iter()
-                .enumerate()
-                .find(|(i, _)| (i + 1).to_string() == input.trim())
-                .map(|(_, model)| model)
-            {
-                agent = self::agent(&client, model, &tavily_client);
-                horizontal_line();
-                break;
-            } else if input.trim() == "/exit" {
-                println!("Farewell!");
-                std::process::exit(0);
-            }
-            input.clear();
-        }
-        Ok(Self {
+        let Some(model) = select_model(&mut std::io::stdin().lock(), &model_options)? else {
+            println!("Farewell!");
+            return Ok(None);
+        };
+        let agent = self::agent(&client, model, &tavily_client);
+        horizontal_line();
+        Ok(Some(Self {
             id,
             client,
             model_options,
@@ -119,7 +131,7 @@ impl Chat {
             total_input_tokens_used: 0,
             total_output_tokens_used: 0,
             tavily_client,
-        })
+        }))
     }
     pub fn id(&self) -> u16 {
         self.id
@@ -203,9 +215,8 @@ impl Chat {
         &self.input
     }
     pub fn read_input(&mut self) {
-        let mut input_str = String::new();
-        match std::io::stdin().read_line(&mut input_str) {
-            Ok(_) => self.input = ChatInput::from(input_str),
+        match input::read(&mut std::io::stdin().lock()) {
+            Ok(input) => self.input = input,
             Err(e) => {
                 eprintln!("Error: {e}");
                 println!("Input failed");
@@ -291,6 +302,40 @@ mod tests {
         assert!(chat.send(Message::user("hello")).await.is_err());
         let messages = sent_messages(&request.await.unwrap());
         assert_eq!(messages.len(), 1, "{messages:#?}");
+    }
+
+    #[test]
+    fn a_model_is_picked_by_its_number_after_bad_tries() {
+        let options = [
+            test_model(),
+            ModelInfo {
+                id: String::from("second"),
+                ..test_model()
+            },
+        ];
+        let mut lines = "0\nfoo\n3\n2\n".as_bytes();
+        let picked = select_model(&mut lines, &options).unwrap().unwrap();
+        assert_eq!(picked.id, "second");
+    }
+
+    #[test]
+    fn exit_or_the_end_of_input_picks_no_model() {
+        let options = [test_model()];
+        assert!(
+            select_model(&mut "/exit\n".as_bytes(), &options)
+                .unwrap()
+                .is_none()
+        );
+        assert!(
+            select_model(&mut "".as_bytes(), &options)
+                .unwrap()
+                .is_none()
+        );
+        assert!(
+            select_model(&mut "9\n".as_bytes(), &options)
+                .unwrap()
+                .is_none()
+        );
     }
 
     #[tokio::test]

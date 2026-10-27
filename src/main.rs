@@ -11,7 +11,8 @@ use crate::chat::Chat;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let state = Chat::new().await?;
-    runner::run(state).await?;
-    Ok(())
+    let Some(chat) = Chat::new().await? else {
+        return Ok(());
+    };
+    runner::run(chat).await
 }

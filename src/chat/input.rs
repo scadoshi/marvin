@@ -1,3 +1,5 @@
+use std::io::BufRead;
+
 #[derive(Debug, Clone, Default)]
 pub enum ChatInput {
     ExitProcess,
@@ -53,6 +55,15 @@ where
     }
 }
 
+/// Reads one line from `reader` and parses it. The end of input reads as `/exit`.
+pub fn read(reader: &mut impl BufRead) -> std::io::Result<ChatInput> {
+    let mut line = String::new();
+    if reader.read_line(&mut line)? == 0 {
+        return Ok(ChatInput::ExitProcess);
+    }
+    Ok(ChatInput::from(line))
+}
+
 impl ChatInput {
     pub fn new() -> Self {
         Self::default()
@@ -94,6 +105,22 @@ mod tests {
             let shouted = format!("  {}\n", command.to_uppercase());
             assert!(is(&parse(&shouted)), "{shouted:?}");
         }
+    }
+
+    #[test]
+    fn a_line_is_read_and_parsed() {
+        let mut lines = "/help\nhello\n".as_bytes();
+        assert!(matches!(
+            read(&mut lines).unwrap(),
+            ChatInput::ShowHelpMessage
+        ));
+        assert!(matches!(read(&mut lines).unwrap(), ChatInput::SendMessage(m) if m == "hello"));
+    }
+
+    #[test]
+    fn the_end_of_input_exits() {
+        let mut empty = "".as_bytes();
+        assert!(matches!(read(&mut empty).unwrap(), ChatInput::ExitProcess));
     }
 
     #[test]
