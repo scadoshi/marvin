@@ -4,10 +4,22 @@ use crate::chat::Chat;
 use crate::ui::horizontal_line;
 
 pub const HISTORY_LEN: usize = 10;
+/// Characters of a message shown before it is cut off with `...`.
+const TRUNCATE_AT: usize = 300;
+
+/// The first [`TRUNCATE_AT`] characters of `text`, trimmed, with `...` when anything was cut.
+fn preview(text: &str) -> String {
+    let truncated = text.chars().take(TRUNCATE_AT).collect::<String>();
+    let end = if text.chars().nth(TRUNCATE_AT).is_some() {
+        "..."
+    } else {
+        ""
+    };
+    format!("{}{end}", truncated.trim())
+}
 
 impl Chat {
     pub(crate) fn show_chat_history(&mut self) {
-        const TRUNCATE_AT: usize = 300;
         if self.chat_history().is_empty() {
             self.clear_input();
             horizontal_line();
@@ -30,14 +42,7 @@ impl Chat {
             match message {
                 Message::User { content } => match content.first() {
                     UserContent::Text(text) => {
-                        let text = text.text();
-                        let truncated = text.chars().take(TRUNCATE_AT).collect::<String>();
-                        let end = if text.len() > TRUNCATE_AT {
-                            String::from("...")
-                        } else {
-                            String::new()
-                        };
-                        println!("*User*: \"{}{}\"", truncated.trim(), end);
+                        println!("*User*: \"{}\"", preview(text.text()));
                     }
                     UserContent::Image(_) => println!("*User*: *image*"),
                     UserContent::Audio(_) => println!("*User*: *audio*"),
@@ -47,14 +52,7 @@ impl Chat {
                 },
                 Message::Assistant { content, .. } => match content.first() {
                     AssistantContent::Text(text) => {
-                        let text = text.text();
-                        let truncated = text.chars().take(TRUNCATE_AT).collect::<String>();
-                        let end = if text.len() > TRUNCATE_AT {
-                            String::from("...")
-                        } else {
-                            String::new()
-                        };
-                        println!("*Assistant*: \"{}{}\"", truncated.trim(), end);
+                        println!("*Assistant*: \"{}\"", preview(text.text()));
                     }
                     AssistantContent::Image(_) => println!("*Assistant*: *image*"),
                     AssistantContent::ToolCall(_) => println!("*Assistant*: *tool call*"),
@@ -68,5 +66,27 @@ impl Chat {
                 println!("---");
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_short_message_shows_whole() {
+        assert_eq!(preview("  hello  "), "hello");
+    }
+
+    #[test]
+    fn a_long_message_is_cut_with_an_ellipsis() {
+        let long = "a".repeat(TRUNCATE_AT + 1);
+        assert_eq!(preview(&long), format!("{}...", "a".repeat(TRUNCATE_AT)));
+    }
+
+    #[test]
+    fn a_short_non_ascii_message_is_not_marked_as_cut() {
+        let accented = "é".repeat(TRUNCATE_AT - 1);
+        assert_eq!(preview(&accented), accented);
     }
 }
