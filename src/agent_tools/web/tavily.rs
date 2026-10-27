@@ -2,10 +2,13 @@
 
 use std::fmt;
 
-use reqwest::{Client, Response};
+use reqwest::{Client, StatusCode};
+use rig::tool::ToolError;
+use serde::Serialize;
 use serde_json::Value;
 use url::Url;
 
+use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 use crate::chat::config::Config;
 
 /// An HTTP client that sends the Tavily API key with each request.
@@ -38,22 +41,37 @@ impl TavilyClient {
             base_url: base_url.into(),
         }
     }
-    /// Where requests go, without a trailing path.
-    pub(crate) fn base_url(&self) -> &str {
-        &self.base_url
-    }
-    /// Posts `json` to `url` with the API key as a bearer token.
+    /// Posts `args` as JSON to `path` with the API key as a bearer token and returns the JSON reply. `name` labels a failure.
     ///
     /// # Errors
     ///
-    /// Returns an error if the request cannot be sent or no response arrives. A non-success status is not an error here.
-    pub(crate) async fn post(&self, url: Url, json: Value) -> Result<Response, reqwest::Error> {
-        self.client
+    /// Returns an error if the request cannot be sent, Tavily answers with a status other than 200 OK (the error carries the status and body), or the reply is not JSON.
+    pub(crate) async fn request(
+        &self,
+        path: &str,
+        args: impl Serialize,
+        name: &str,
+    ) -> Result<Value, ToolError> {
+        let url = Url::parse(&self.base_url)
+            .into_tool_result()?
+            .join(path)
+            .into_tool_result()?;
+        let response = self
+            .client
             .post(url)
             .bearer_auth(&self.api_key)
-            .json(&json)
+            .json(&args)
             .send()
             .await
+            .into_tool_result()?;
+        let status = response.status();
+        if status != StatusCode::OK {
+            let body = response.text().await.into_tool_result()?;
+            return Err(
+                ToolFailure(format!("{name} failed with {status}: {body}")).into_tool_error()
+            );
+        }
+        response.json::<Value>().await.into_tool_result()
     }
 }
 

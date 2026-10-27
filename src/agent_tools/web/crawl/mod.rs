@@ -5,15 +5,12 @@ pub(crate) mod request;
 use std::sync::Arc;
 
 use request::CrawlArgs;
-use reqwest::StatusCode;
 use rig::completion::ToolDefinition;
 use rig::tool::{Tool, ToolError};
 use schemars::schema_for;
 use serde_json::Value;
-use url::Url;
 
 use super::tavily::TavilyClient;
-use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 
 /// Tavily endpoint for the `crawl_website` tool.
 const CRAWL_PATH: &str = "/crawl";
@@ -55,19 +52,6 @@ impl Tool for Crawl {
     ///
     /// Returns an error if the request fails, the response body is not JSON, or Tavily answers with a status other than 200 OK.
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let url = Url::parse(self.client.base_url())
-            .into_tool_result()?
-            .join(CRAWL_PATH)
-            .into_tool_result()?;
-        let json = serde_json::to_value(args).into_tool_result()?;
-        let response = self.client.post(url, json).await.into_tool_result()?;
-        let status = response.status();
-        let body = response.json::<Value>().await.into_tool_result()?;
-        match status {
-            StatusCode::OK => Ok(body),
-            status => {
-                Err(ToolFailure(format!("Crawl failed with {status}: {body:?}")).into_tool_error())
-            }
-        }
+        self.client.request(CRAWL_PATH, args, "Crawl").await
     }
 }
