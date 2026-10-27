@@ -15,8 +15,10 @@ pub(crate) struct SubtractArgs {
 
 pub(crate) struct Subtract;
 
-// rig's Tool trait declares these methods async.
-#[allow(clippy::unused_async_trait_impl)]
+#[expect(
+    clippy::unused_async_trait_impl,
+    reason = "rig's Tool trait declares definition and call async"
+)]
 impl Tool for Subtract {
     const NAME: &'static str = "subtract";
     type Args = SubtractArgs;

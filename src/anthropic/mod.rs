@@ -9,13 +9,10 @@ struct ModelsResponse {
     //last_id: String,
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
 pub(crate) struct ModelInfo {
     pub id: String,
-    pub created_at: String,
     pub display_name: String,
-    pub r#type: String,
     pub max_tokens: u64,
 }
 

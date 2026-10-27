@@ -25,8 +25,10 @@ impl Search {
     }
 }
 
-// rig's Tool trait declares these methods async.
-#[allow(clippy::unused_async_trait_impl)]
+#[expect(
+    clippy::unused_async_trait_impl,
+    reason = "rig's Tool trait declares definition and call async"
+)]
 impl Tool for Search {
     const NAME: &'static str = "search_web";
     type Args = SearchArgs;

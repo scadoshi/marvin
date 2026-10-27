@@ -249,9 +249,7 @@ mod tests {
     fn test_model() -> ModelInfo {
         ModelInfo {
             id: String::from("claude-test"),
-            created_at: String::new(),
             display_name: String::from("Claude Test"),
-            r#type: String::from("model"),
             max_tokens: 1024,
         }
     }
