@@ -14,7 +14,7 @@ impl Chat {
         loop {
             println!("Select a model");
             horizontal_line();
-            self.get_input();
+            self.read_input();
             match self.input() {
                 ChatInput::SendMessage(message) => {
                     let Some(selection) = self

@@ -201,35 +201,10 @@ impl Chat {
         serde_json::to_writer_pretty(file, &chat_history_json)?;
         Ok(())
     }
-    pub fn append_chat_history_from_file_infallible(&mut self, id: u16) {
-        let file_path = format!("{CHATS_DIR_NAME}/{id}.json");
-        let file_result = std::fs::File::open(file_path);
-        match file_result {
-            Ok(mut file) => {
-                println!("chat_history with ID: {id} found!");
-                let file_str = {
-                    let mut file_str = String::new();
-                    let Ok(_) =
-                        <std::fs::File as std::io::Read>::read_to_string(&mut file, &mut file_str)
-                    else {
-                        println!("Failed to read file");
-                        return;
-                    };
-                    file_str
-                };
-                let Ok(chat_history) = serde_json::from_str::<Vec<Message>>(&file_str) else {
-                    println!("Failed to serialize file to `Vec<Message>`");
-                    return;
-                };
-                self.history.extend(chat_history);
-            }
-            Err(e) => println!("Failed to get chat_history: {e}"),
-        }
-    }
     pub fn input(&self) -> &ChatInput {
         &self.input
     }
-    pub fn get_input(&mut self) {
+    pub fn read_input(&mut self) {
         let mut input_str = String::new();
         match std::io::stdin().read_line(&mut input_str) {
             Ok(_) => self.input = ChatInput::from(input_str),

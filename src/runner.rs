@@ -10,14 +10,18 @@ pub async fn run(mut chat: Chat) -> anyhow::Result<()> {
     loop {
         horizontal_line();
         if chat.input().is_none() {
-            chat.get_input();
+            chat.read_input();
         }
         match chat.input() {
             ChatInput::ClearContext => chat.clear_context()?,
             ChatInput::ShowHelpMessage => chat.show_help_message(),
             ChatInput::ShowChatHistory => chat.show_chat_history(),
             ChatInput::SaveChatHistory => chat.save_chat_history()?,
-            ChatInput::ImportChatHistory(id) => chat.import_chat_history(*id),
+            ChatInput::ImportChatHistory(id) => {
+                if let Err(e) = chat.import_chat_history(*id) {
+                    println!("{e:#}");
+                }
+            }
             ChatInput::ShowTokenUsage => chat.show_token_usage(),
             ChatInput::SwitchModel => chat.switch_model()?,
             ChatInput::ShowContextSummary => chat.show_context_summary().await?,
