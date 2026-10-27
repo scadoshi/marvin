@@ -15,6 +15,7 @@ use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 
 const CRAWL_PATH: &str = "/crawl";
 
+#[derive(Debug)]
 pub(crate) struct Crawl {
     client: Arc<TavilyClient>,
 }

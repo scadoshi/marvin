@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Default, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(description = "Depth of extraction. 'advanced' provides more thorough extraction.")]
 pub(crate) enum ExtractDepth {
@@ -10,7 +10,7 @@ pub(crate) enum ExtractDepth {
     Advanced,
 }
 
-#[derive(Default, Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(description = "Format of the extracted content.")]
 pub(crate) enum ExtractFormat {
@@ -19,7 +19,7 @@ pub(crate) enum ExtractFormat {
     Text,
 }
 
-#[derive(Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub(crate) struct ExtractArgs {
     #[schemars(description = "List of URLs to extract content from")]
     pub urls: Vec<String>,

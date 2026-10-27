@@ -1,3 +1,5 @@
+use std::fmt;
+
 use reqwest::{Client, Response};
 use serde_json::Value;
 use url::Url;
@@ -10,6 +12,13 @@ pub(crate) struct TavilyClient {
 }
 
 pub(super) const BASE_URL: &str = "https://api.tavily.com";
+
+/// Prints no key.
+impl fmt::Debug for TavilyClient {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("TavilyClient").finish_non_exhaustive()
+    }
+}
 
 impl TavilyClient {
     pub(crate) fn new(api_key: impl Into<String>) -> Self {

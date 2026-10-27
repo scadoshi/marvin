@@ -15,6 +15,7 @@ use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 
 const MAP_PATH: &str = "/map";
 
+#[derive(Debug)]
 pub(crate) struct Map {
     client: Arc<TavilyClient>,
 }

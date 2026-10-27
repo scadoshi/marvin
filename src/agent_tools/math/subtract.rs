@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::agent_tools::{ToolErrorExt, ToolFailure};
 
-#[derive(Serialize, Deserialize, JsonSchema)]
+#[derive(Debug, Serialize, Deserialize, JsonSchema)]
 pub(crate) struct SubtractArgs {
     #[schemars(description = "left hand side \\ the first number \\ the minuend")]
     pub lhs: i64,
@@ -13,6 +13,7 @@ pub(crate) struct SubtractArgs {
     pub rhs: i64,
 }
 
+#[derive(Debug)]
 pub(crate) struct Subtract;
 
 #[expect(

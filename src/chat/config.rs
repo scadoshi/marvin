@@ -1,8 +1,17 @@
+use std::fmt;
+
 use dotenvy::dotenv;
 
 pub(crate) struct Config {
     anthropic_api_key: String,
     tavily_api_key: String,
+}
+
+/// Prints no keys.
+impl fmt::Debug for Config {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Config").finish_non_exhaustive()
+    }
 }
 
 impl Config {

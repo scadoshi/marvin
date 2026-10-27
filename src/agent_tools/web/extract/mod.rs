@@ -15,6 +15,7 @@ use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 
 const EXTRACT_PATH: &str = "/extract";
 
+#[derive(Debug)]
 pub(crate) struct Extract {
     client: Arc<TavilyClient>,
 }

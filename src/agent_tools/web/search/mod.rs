@@ -15,6 +15,7 @@ use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 
 const SEARCH_PATH: &str = "/search";
 
+#[derive(Debug)]
 pub(crate) struct Search {
     client: Arc<TavilyClient>,
 }

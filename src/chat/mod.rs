@@ -1,6 +1,7 @@
 pub(crate) mod config;
 pub(crate) mod input;
 use std::collections::HashSet;
+use std::fmt;
 use std::io::BufRead;
 use std::sync::Arc;
 
@@ -73,6 +74,17 @@ fn agent(
         .tools(web::tools(tavily_client))
         .default_max_turns(100)
         .build()
+}
+
+/// Prints the chat's ID, model and history length, not its agent or client.
+impl fmt::Debug for Chat {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Chat")
+            .field("id", &self.id)
+            .field("model", &self.model())
+            .field("messages", &self.history.len())
+            .finish_non_exhaustive()
+    }
 }
 
 /// Asks for a model by its number until one is picked. `None` on `/exit` or the end of input.
