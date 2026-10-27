@@ -42,4 +42,17 @@ mod tests {
     fn test_formatted() {
         assert_eq!(234_567_890.formatted(), "234,567,890".to_string());
     }
+
+    #[test]
+    fn formatted_groups_by_three_from_the_right() {
+        for (n, want) in [
+            (0, "0"),
+            (999, "999"),
+            (1_000, "1,000"),
+            (12_345, "12,345"),
+            (1_000_000, "1,000,000"),
+        ] {
+            assert_eq!(n.formatted(), want, "{n}");
+        }
+    }
 }

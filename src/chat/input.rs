@@ -62,3 +62,53 @@ impl ChatInput {
         matches!(self, ChatInput::None)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse(input: &str) -> ChatInput {
+        ChatInput::from(input)
+    }
+
+    #[test]
+    fn each_command_parses_case_insensitively_and_trimmed() {
+        let cases: [(&str, fn(&ChatInput) -> bool); 10] = [
+            ("/exit", |i| matches!(i, ChatInput::ExitProcess)),
+            ("/history", |i| matches!(i, ChatInput::ShowChatHistory)),
+            ("/save", |i| matches!(i, ChatInput::SaveChatHistory)),
+            ("/tokens", |i| matches!(i, ChatInput::ShowTokenUsage)),
+            ("/clear", |i| matches!(i, ChatInput::ClearContext)),
+            ("/model", |i| matches!(i, ChatInput::SwitchModel)),
+            ("/help", |i| matches!(i, ChatInput::ShowHelpMessage)),
+            ("/summarize", |i| matches!(i, ChatInput::ShowContextSummary)),
+            ("/compact", |i| matches!(i, ChatInput::CompactContext)),
+            ("/import 7", |i| {
+                matches!(i, ChatInput::ImportChatHistory(7))
+            }),
+        ];
+        for (command, is) in cases {
+            assert!(is(&parse(command)), "{command}");
+            let shouted = format!("  {}\n", command.to_uppercase());
+            assert!(is(&parse(&shouted)), "{shouted:?}");
+        }
+    }
+
+    #[test]
+    fn blank_input_is_none() {
+        assert!(parse("").is_none());
+        assert!(parse("  \n").is_none());
+    }
+
+    #[test]
+    fn import_without_an_id_is_a_message() {
+        assert!(matches!(parse("/import"), ChatInput::SendMessage(m) if m == "/import"));
+    }
+
+    #[test]
+    fn anything_else_is_a_trimmed_message() {
+        assert!(
+            matches!(parse("  hello there\n"), ChatInput::SendMessage(m) if m == "hello there")
+        );
+    }
+}
