@@ -23,7 +23,7 @@ pub async fn run(mut chat: Chat) -> anyhow::Result<()> {
                 }
             }
             ChatInput::ShowTokenUsage => chat.show_token_usage(),
-            ChatInput::SwitchModel => chat.switch_model()?,
+            ChatInput::SwitchModel => chat.switch_model(),
             ChatInput::ShowContextSummary => chat.show_context_summary().await?,
             ChatInput::CompactContext => chat.compact_context().await?,
             ChatInput::None => {}

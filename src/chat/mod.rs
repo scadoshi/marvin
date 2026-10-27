@@ -24,7 +24,7 @@ pub static PREAMBLE: &str = include_str!("preamble.txt");
 
 pub struct Chat {
     id: u16,
-    config: Config,
+    client: Client,
     model_options: Vec<ModelInfo>,
     agent: Agent<CompletionModel>,
     history: Vec<Message>,
@@ -59,11 +59,11 @@ fn next_chat_id() -> anyhow::Result<u16> {
 
 /// Marvin on `model`, with the math and web tools.
 fn agent(
-    api_key: &str,
+    client: &Client,
     model: &ModelInfo,
     tavily_client: &Arc<TavilyClient>,
-) -> anyhow::Result<Agent<CompletionModel>> {
-    Ok(Client::new(api_key)?
+) -> Agent<CompletionModel> {
+    client
         .agent(&model.id)
         .name("Marvin")
         .preamble(PREAMBLE)
@@ -71,7 +71,7 @@ fn agent(
         .tools(math::tools())
         .tools(web::tools(tavily_client))
         .default_max_turns(100)
-        .build())
+        .build()
 }
 
 impl Chat {
@@ -82,6 +82,7 @@ impl Chat {
         let tavily_client = Arc::new(TavilyClient::from(&config));
         let model_options =
             anthropic::fetch_models(anthropic::API_BASE, config.anthropic_api_key()).await?;
+        let client = Client::new(config.anthropic_api_key())?;
         let agent: Agent<CompletionModel>;
         let mut input = String::new();
         println!("Current model: not set");
@@ -99,7 +100,7 @@ impl Chat {
                 .find(|(i, _)| (i + 1).to_string() == input.trim())
                 .map(|(_, model)| model)
             {
-                agent = self::agent(config.anthropic_api_key(), model, &tavily_client)?;
+                agent = self::agent(&client, model, &tavily_client);
                 horizontal_line();
                 break;
             } else if input.trim() == "/exit" {
@@ -110,7 +111,7 @@ impl Chat {
         }
         Ok(Self {
             id,
-            config,
+            client,
             model_options,
             agent,
             history: Vec::new(),
@@ -123,9 +124,6 @@ impl Chat {
     pub fn id(&self) -> u16 {
         self.id
     }
-    pub fn config(&self) -> &Config {
-        &self.config
-    }
     pub fn model_options(&self) -> &[ModelInfo] {
         self.model_options.as_slice()
     }
@@ -135,13 +133,8 @@ impl Chat {
             .find(|model| model.id == self.agent.model.model)
             .map_or("", |model| model.display_name.as_str())
     }
-    pub fn set_agent(&mut self, model: &ModelInfo) -> anyhow::Result<()> {
-        self.agent = agent(
-            self.config().anthropic_api_key(),
-            model,
-            &self.tavily_client,
-        )?;
-        Ok(())
+    pub fn set_agent(&mut self, model: &ModelInfo) {
+        self.agent = agent(&self.client, model, &self.tavily_client);
     }
     pub async fn send(&mut self, message: impl Into<Message>) -> anyhow::Result<String> {
         let message = message.into();
@@ -255,7 +248,8 @@ mod tests {
             max_tokens: 1024,
         };
         let tavily = Arc::new(TavilyClient::new("test"));
-        let agent = agent("test", &model, &tavily).unwrap();
+        let client = Client::new("test").unwrap();
+        let agent = agent(&client, &model, &tavily);
         assert_eq!(agent.name.as_deref(), Some("Marvin"));
         assert_eq!(agent.default_max_turns, Some(100));
         assert_eq!(agent.model.model, "claude-test");

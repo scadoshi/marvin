@@ -3,7 +3,7 @@ use crate::chat::input::ChatInput;
 use crate::ui::horizontal_line;
 
 impl Chat {
-    pub(crate) fn switch_model(&mut self) -> anyhow::Result<()> {
+    pub(crate) fn switch_model(&mut self) {
         horizontal_line();
         self.clear_input();
         println!("Current model: {}", self.model());
@@ -33,13 +33,12 @@ impl Chat {
                         continue;
                     };
                     self.clear_input();
-                    self.set_agent(&selection)?;
+                    self.set_agent(&selection);
                     println!("Model updated: {}", self.model());
                     break;
                 }
                 _ => break, // any other command should go to main loop for triaging
             }
         }
-        Ok(())
     }
 }
