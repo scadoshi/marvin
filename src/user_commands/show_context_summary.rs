@@ -1,8 +1,15 @@
+//! `/summarize`: asks the model to summarize the chat.
+
 use rig::message::Message;
 
 use crate::chat::Chat;
 
 impl Chat {
+    /// Streams a short summary of the chat from the model. The request and reply join the history.
+    ///
+    /// # Errors
+    ///
+    /// Never returns an error. Stream errors are printed.
     pub(crate) async fn show_context_summary(&mut self) -> anyhow::Result<()> {
         self.clear_input();
         if self.chat_history().is_empty() {

@@ -1,6 +1,9 @@
+//! `/tokens`: prints the token totals.
+
 use crate::chat::Chat;
 use crate::ui;
 
+/// `n` with a comma between each group of three digits.
 fn formatted(n: usize) -> String {
     let mut str = n.to_string();
     for i in (1..str.len()).rev().skip(2).step_by(3) {
@@ -10,6 +13,7 @@ fn formatted(n: usize) -> String {
 }
 
 impl Chat {
+    /// Prints the input and output tokens used in this chat.
     pub(crate) fn show_token_usage(&mut self) {
         self.clear_input();
         ui::horizontal_line();

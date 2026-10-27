@@ -1,3 +1,5 @@
+//! Web tools backed by the Tavily API.
+
 use std::sync::Arc;
 
 use crawl::Crawl;
@@ -13,6 +15,7 @@ pub(crate) mod map;
 pub(crate) mod search;
 pub(crate) mod tavily;
 
+/// The four Tavily tools, sharing `client`.
 pub(crate) fn tools(client: &Arc<TavilyClient>) -> Vec<Box<dyn ToolDyn>> {
     vec![
         Box::new(Search::new(Arc::clone(client))),

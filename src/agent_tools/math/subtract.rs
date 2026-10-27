@@ -1,3 +1,5 @@
+//! The `subtract` tool.
+
 use rig::completion::ToolDefinition;
 use rig::tool::{Tool, ToolError};
 use schemars::{JsonSchema, schema_for};
@@ -13,6 +15,7 @@ pub(crate) struct SubtractArgs {
     pub rhs: i64,
 }
 
+/// Subtracts two `i64`s.
 #[derive(Debug)]
 pub(crate) struct Subtract;
 
@@ -36,6 +39,11 @@ impl Tool for Subtract {
         }
     }
 
+    /// Returns `lhs - rhs`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the difference overflows `i64`.
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         args.lhs
             .checked_sub(args.rhs)

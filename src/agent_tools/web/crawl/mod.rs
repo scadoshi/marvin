@@ -1,3 +1,5 @@
+//! The `crawl_website` tool, which calls Tavily's `/crawl` endpoint.
+
 pub(crate) mod request;
 
 use std::sync::Arc;
@@ -13,14 +15,17 @@ use url::Url;
 use super::tavily::{BASE_URL, TavilyClient};
 use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 
+/// Tavily endpoint for the `crawl_website` tool.
 const CRAWL_PATH: &str = "/crawl";
 
+/// Crawls a site from a root URL through Tavily and returns the content of the pages it reaches.
 #[derive(Debug)]
 pub(crate) struct Crawl {
     client: Arc<TavilyClient>,
 }
 
 impl Crawl {
+    /// A tool that sends its requests through `client`.
     pub(crate) fn new(client: Arc<TavilyClient>) -> Self {
         Self { client }
     }
@@ -44,6 +49,11 @@ impl Tool for Crawl {
         }
     }
 
+    /// Sends the arguments to Tavily's `/crawl` endpoint and returns the JSON body.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the request fails, the response body is not JSON, or Tavily answers with a status other than 200 OK.
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         let url = Url::parse(BASE_URL)
             .into_tool_result()?

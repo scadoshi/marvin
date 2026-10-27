@@ -1,18 +1,33 @@
+//! Parses a line of user input into a slash command or a message.
+
 use std::io::BufRead;
 
+/// One line of user input: a slash command, a message for the model, or nothing.
 #[derive(Debug, Clone, Default)]
 pub(crate) enum ChatInput {
+    /// `/exit`: save the history and quit.
     ExitProcess,
+    /// `/history`: print the latest messages.
     ShowChatHistory,
+    /// `/save`: write the history to this chat's file.
     SaveChatHistory,
+    /// `/import <id>`: append a saved chat's messages to the history.
     ImportChatHistory(u16),
+    /// `/tokens`: print the token totals.
     ShowTokenUsage,
+    /// `/clear`: empty the history.
     ClearContext,
+    /// `/model`: pick another model.
     SwitchModel,
+    /// `/help`: list the commands.
     ShowHelpMessage,
+    /// `/summarize`: ask the model to summarize the chat.
     ShowContextSummary,
+    /// `/compact`: replace the history with a summary.
     CompactContext,
+    /// Any other line, trimmed, to send to the model.
     SendMessage(String),
+    /// A blank line, or input that has been handled.
     #[default]
     None,
 }
@@ -56,6 +71,10 @@ where
 }
 
 /// Reads one line from `reader` and parses it. The end of input reads as `/exit`.
+///
+/// # Errors
+///
+/// Returns an error if reading from `reader` fails.
 pub(crate) fn read(reader: &mut impl BufRead) -> std::io::Result<ChatInput> {
     let mut line = String::new();
     if reader.read_line(&mut line)? == 0 {
@@ -65,12 +84,15 @@ pub(crate) fn read(reader: &mut impl BufRead) -> std::io::Result<ChatInput> {
 }
 
 impl ChatInput {
+    /// No input, [`ChatInput::None`].
     pub(crate) fn new() -> Self {
         Self::default()
     }
+    /// Marks the input as handled by setting it to [`ChatInput::None`].
     pub(crate) fn clear(&mut self) {
         *self = Self::None;
     }
+    /// Whether there is no input waiting.
     pub(crate) fn is_none(&self) -> bool {
         matches!(self, ChatInput::None)
     }

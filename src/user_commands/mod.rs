@@ -1,3 +1,5 @@
+//! Slash commands, each an `impl Chat` block in its own file.
+
 mod clear_context;
 mod compact_context;
 mod exit_process;

@@ -1,3 +1,5 @@
+//! The `divide` tool.
+
 use rig::completion::ToolDefinition;
 use rig::tool::{Tool, ToolError};
 use schemars::{JsonSchema, schema_for};
@@ -13,6 +15,7 @@ pub(crate) struct DivideArgs {
     pub rhs: i64,
 }
 
+/// Divides one `i64` by another, rounding toward zero.
 #[derive(Debug)]
 pub(crate) struct Divide;
 
@@ -36,6 +39,11 @@ impl Tool for Divide {
         }
     }
 
+    /// Returns `lhs / rhs`, rounded toward zero.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `rhs` is zero, or on overflow, which only `i64::MIN / -1` causes.
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         if args.rhs == 0 {
             return Err(ToolFailure(String::from("division by zero")).into_tool_error());

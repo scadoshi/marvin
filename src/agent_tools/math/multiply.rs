@@ -1,3 +1,5 @@
+//! The `multiply` tool.
+
 use rig::completion::ToolDefinition;
 use rig::tool::{Tool, ToolError};
 use schemars::{JsonSchema, schema_for};
@@ -13,6 +15,7 @@ pub(crate) struct MultiplyArgs {
     pub rhs: i64,
 }
 
+/// Multiplies two `i64`s.
 #[derive(Debug)]
 pub(crate) struct Multiply;
 
@@ -34,6 +37,11 @@ impl Tool for Multiply {
         }
     }
 
+    /// Returns `lhs * rhs`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the product overflows `i64`.
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         args.lhs
             .checked_mul(args.rhs)

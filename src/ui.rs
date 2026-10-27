@@ -1,11 +1,17 @@
+//! Terminal output shared by the chat and its commands.
+
 use std::io::{self, Write};
 
+/// Characters in a [`horizontal_line`].
 const WIDTH: usize = 50;
+/// What [`horizontal_line`] repeats.
 const HORIZONTAL_LINE_STR: &str = "-";
+/// Prints a divider [`WIDTH`] dashes wide.
 pub(crate) fn horizontal_line() {
     println!("{}", HORIZONTAL_LINE_STR.repeat(WIDTH));
 }
 
+/// Greets the user and announces the new chat's ID, printing three dots half a second apart.
 pub(crate) fn welcome_message(chat_id: u16) {
     println!("Hello, I am Marvin, your personal AI assistant!");
     print!("Initiating new chat state (ID = {chat_id})");

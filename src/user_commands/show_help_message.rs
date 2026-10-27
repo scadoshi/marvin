@@ -1,8 +1,11 @@
+//! `/help`: lists the slash commands.
+
 use crate::chat::Chat;
 use crate::ui;
 use crate::user_commands::show_chat_history::HISTORY_LEN;
 
 impl Chat {
+    /// Prints each slash command with a short description.
     pub(crate) fn show_help_message(&mut self) {
         self.clear_input();
         ui::horizontal_line();

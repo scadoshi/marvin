@@ -1,3 +1,5 @@
+//! The `map_website` tool, which calls Tavily's `/map` endpoint.
+
 pub(crate) mod request;
 
 use std::sync::Arc;
@@ -13,14 +15,17 @@ use url::Url;
 use super::tavily::{BASE_URL, TavilyClient};
 use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 
+/// Tavily endpoint for the `map_website` tool.
 const MAP_PATH: &str = "/map";
 
+/// Lists the URLs of a site through Tavily, without their content.
 #[derive(Debug)]
 pub(crate) struct Map {
     client: Arc<TavilyClient>,
 }
 
 impl Map {
+    /// A tool that sends its requests through `client`.
     pub(crate) fn new(client: Arc<TavilyClient>) -> Self {
         Self { client }
     }
@@ -44,6 +49,11 @@ impl Tool for Map {
         }
     }
 
+    /// Sends the arguments to Tavily's `/map` endpoint and returns the JSON body.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the request fails, the response body is not JSON, or Tavily answers with a status other than 200 OK.
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         let url = Url::parse(BASE_URL)
             .into_tool_result()?

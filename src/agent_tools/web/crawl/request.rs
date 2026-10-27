@@ -1,6 +1,9 @@
+//! Arguments for the `crawl_website` tool, sent as the Tavily crawl request body.
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+/// How deeply Tavily extracts each crawled page.
 #[derive(Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(description = "Depth of content extraction.")]
@@ -10,6 +13,7 @@ pub(crate) enum ExtractDepth {
     Advanced,
 }
 
+/// Format of the crawled content.
 #[derive(Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(description = "Format of the extracted content.")]

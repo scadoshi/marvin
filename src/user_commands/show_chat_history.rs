@@ -1,8 +1,11 @@
+//! `/history`: prints the latest messages, shortened.
+
 use rig::message::{AssistantContent, Message, UserContent};
 
 use crate::chat::Chat;
 use crate::ui;
 
+/// Messages `/history` shows, counting back from the latest.
 pub(crate) const HISTORY_LEN: usize = 10;
 /// Characters of a message shown before it is cut off with `...`.
 const TRUNCATE_AT: usize = 300;
@@ -19,6 +22,7 @@ fn preview(text: &str) -> String {
 }
 
 impl Chat {
+    /// Prints the last [`HISTORY_LEN`] messages as previews. Only each message's first part is shown, and anything but text is shown by its kind.
     pub(crate) fn show_chat_history(&mut self) {
         if self.chat_history().is_empty() {
             self.clear_input();

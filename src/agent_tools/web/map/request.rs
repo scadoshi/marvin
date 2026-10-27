@@ -1,3 +1,5 @@
+//! Arguments for the `map_website` tool, sent as the Tavily map request body.
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

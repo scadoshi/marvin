@@ -1,7 +1,10 @@
+//! API keys, read from the environment or a `.env` file.
+
 use std::{env, fmt};
 
 use anyhow::Context;
 
+/// The Anthropic and Tavily API keys.
 pub(crate) struct Config {
     anthropic_api_key: String,
     tavily_api_key: String,
@@ -15,12 +18,21 @@ impl fmt::Debug for Config {
 }
 
 impl Config {
+    /// Loads `.env` if there is one, then reads the keys from the environment.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error naming the first key that is unset or not valid Unicode.
     pub(crate) fn from_env() -> anyhow::Result<Self> {
         dotenvy::dotenv().ok();
         Self::from_vars(|name| env::var(name))
     }
 
     /// Reads the keys through `var`, which looks one up by name.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error naming the first key `var` fails to find.
     fn from_vars(var: impl Fn(&str) -> Result<String, env::VarError>) -> anyhow::Result<Self> {
         let read = |name| var(name).with_context(|| format!("{name} is not set; see .env.example"));
         let anthropic_api_key = read("ANTHROPIC_API_KEY")?;
@@ -30,9 +42,11 @@ impl Config {
             tavily_api_key,
         })
     }
+    /// Key for the Anthropic API.
     pub(crate) fn anthropic_api_key(&self) -> &str {
         &self.anthropic_api_key
     }
+    /// Key for the Tavily API.
     pub(crate) fn tavily_api_key(&self) -> &str {
         &self.tavily_api_key
     }

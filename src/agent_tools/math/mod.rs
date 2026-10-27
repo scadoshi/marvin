@@ -1,3 +1,5 @@
+//! Integer arithmetic tools. Each fails on overflow instead of wrapping.
+
 use rig::tool::ToolDyn;
 
 use crate::agent_tools::math::add::Add;
@@ -10,6 +12,7 @@ pub(crate) mod divide;
 pub(crate) mod multiply;
 pub(crate) mod subtract;
 
+/// One of each math tool, boxed for the agent.
 pub(crate) fn tools() -> Vec<Box<dyn ToolDyn>> {
     vec![
         Box::new(Add),

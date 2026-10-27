@@ -1,3 +1,5 @@
+//! The `add` tool.
+
 use rig::completion::ToolDefinition;
 use rig::tool::{Tool, ToolError};
 use schemars::{JsonSchema, schema_for};
@@ -13,6 +15,7 @@ pub(crate) struct AddArgs {
     pub rhs: i64,
 }
 
+/// Adds two `i64`s.
 #[derive(Debug)]
 pub(crate) struct Add;
 
@@ -34,6 +37,11 @@ impl Tool for Add {
         }
     }
 
+    /// Returns `lhs + rhs`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the sum overflows `i64`.
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         args.lhs
             .checked_add(args.rhs)

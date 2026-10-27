@@ -1,6 +1,9 @@
+//! Lists the models the Anthropic API offers.
+
 use reqwest::Client;
 use serde::Deserialize;
 
+/// Body of `GET /v1/models`, keeping only the list.
 #[derive(Debug, Deserialize, Clone)]
 struct ModelsResponse {
     data: Vec<ModelInfo>,
@@ -9,10 +12,14 @@ struct ModelsResponse {
     //last_id: String,
 }
 
+/// One model from the list.
 #[derive(Debug, Deserialize, Clone)]
 pub(crate) struct ModelInfo {
+    /// ID sent in API requests.
     pub id: String,
+    /// Name shown to the user.
     pub display_name: String,
+    /// Most output tokens the model can produce, used as the agent's `max_tokens`.
     pub max_tokens: u64,
 }
 
@@ -20,6 +27,10 @@ pub(crate) struct ModelInfo {
 pub(crate) const API_BASE: &str = "https://api.anthropic.com";
 
 /// Lists the models the API key can use.
+///
+/// # Errors
+///
+/// Returns an error if the request fails, the API answers with a non-success status, or the body is not a model list.
 pub(crate) async fn fetch_models(base_url: &str, api_key: &str) -> anyhow::Result<Vec<ModelInfo>> {
     let response = Client::new()
         .get(format!("{base_url}/v1/models"))

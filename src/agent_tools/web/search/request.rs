@@ -1,6 +1,9 @@
+//! Arguments for the `search_web` tool, sent as the Tavily search request body.
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+/// Kind of search Tavily runs.
 #[derive(Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(
@@ -12,6 +15,7 @@ pub(crate) enum Topic {
     News,
 }
 
+/// How hard Tavily searches, trading speed for relevance.
 #[derive(Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(
@@ -25,6 +29,7 @@ pub(crate) enum SearchDepth {
     Ultrafast,
 }
 
+/// How recent results must be.
 #[derive(Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(description = "Filter results by publish date.")]

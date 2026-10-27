@@ -1,8 +1,15 @@
+//! The main loop: reads a line, then runs the slash command or sends the message to the model.
+
 use rig::message::Message;
 
 use crate::chat::{Chat, ChatInput};
 use crate::ui;
 
+/// Reads and handles input until `/exit` or the end of input.
+///
+/// # Errors
+///
+/// Returns an error if saving the history fails, on `/save` or `/exit`, or if `/compact` cannot get a summary from the model. A failed `/import` is printed instead.
 pub(crate) async fn run(mut chat: Chat) -> anyhow::Result<()> {
     println!("Agent: {}", chat.model());
     ui::horizontal_line();

@@ -1,8 +1,13 @@
+//! `/model`: switches the chat to another model.
+
 use crate::chat::Chat;
 use crate::chat::input::ChatInput;
 use crate::ui;
 
 impl Chat {
+    /// Lists the models and rebuilds the agent on the one picked by number.
+    ///
+    /// Another message or an out-of-range number asks again. A blank line or a slash command leaves the model as it is, and the command stays as input for the main loop.
     pub(crate) fn switch_model(&mut self) {
         ui::horizontal_line();
         self.clear_input();

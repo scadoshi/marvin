@@ -1,9 +1,16 @@
+//! `/import <id>`: loads a saved chat.
+
 use anyhow::Context;
 use rig::message::Message;
 
 use crate::chat::{CHATS_DIR_NAME, Chat};
 
 impl Chat {
+    /// Appends the messages saved under chat `id` to the history.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `<CHATS_DIR_NAME>/<id>.json` cannot be read or does not hold a list of messages.
     pub(crate) fn import_chat_history(&mut self, id: u16) -> anyhow::Result<()> {
         self.clear_input();
         let file_path = format!("{CHATS_DIR_NAME}/{id}.json");

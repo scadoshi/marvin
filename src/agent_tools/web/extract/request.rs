@@ -1,6 +1,9 @@
+//! Arguments for the `extract_url` tool, sent as the Tavily extract request body.
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+/// How deeply Tavily extracts each page.
 #[derive(Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(description = "Depth of extraction. 'advanced' provides more thorough extraction.")]
@@ -10,6 +13,7 @@ pub(crate) enum ExtractDepth {
     Advanced,
 }
 
+/// Format of the extracted content.
 #[derive(Debug, Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(description = "Format of the extracted content.")]
