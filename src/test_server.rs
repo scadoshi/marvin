@@ -25,7 +25,7 @@ pub(crate) async fn serve_once(status: u16, body: &'static str) -> (String, Join
             let n = socket.read(&mut buf).await.unwrap();
             request.extend_from_slice(&buf[..n]);
             if let Some(i) = request.windows(4).position(|w| w == b"\r\n\r\n") {
-                break i + 4;
+                break i.saturating_add(4);
             }
         };
         let head = String::from_utf8_lossy(&request[..body_start]).into_owned();
@@ -34,7 +34,7 @@ pub(crate) async fn serve_once(status: u16, body: &'static str) -> (String, Join
             .lines()
             .find_map(|line| line.strip_prefix("content-length:"))
             .map_or(0, |len| len.trim().parse().unwrap());
-        while request.len() < body_start + content_length {
+        while request.len() < body_start.saturating_add(content_length) {
             let n = socket.read(&mut buf).await.unwrap();
             request.extend_from_slice(&buf[..n]);
         }

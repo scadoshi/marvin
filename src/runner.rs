@@ -20,7 +20,7 @@ pub(crate) async fn run(mut chat: Chat) -> anyhow::Result<()> {
             chat.read_input();
         }
         match chat.input() {
-            ChatInput::ClearContext => chat.clear_context()?,
+            ChatInput::ClearContext => chat.clear_context(),
             ChatInput::ShowHelpMessage => chat.show_help_message(),
             ChatInput::ShowChatHistory => chat.show_chat_history(),
             ChatInput::SaveChatHistory => chat.save_chat_history()?,
@@ -31,7 +31,7 @@ pub(crate) async fn run(mut chat: Chat) -> anyhow::Result<()> {
             }
             ChatInput::ShowTokenUsage => chat.show_token_usage(),
             ChatInput::SwitchModel => chat.switch_model(),
-            ChatInput::ShowContextSummary => chat.show_context_summary().await?,
+            ChatInput::ShowContextSummary => chat.show_context_summary().await,
             ChatInput::CompactContext => chat.compact_context().await?,
             ChatInput::None => {}
             ChatInput::ExitProcess => {

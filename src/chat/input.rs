@@ -108,7 +108,8 @@ mod tests {
 
     #[test]
     fn each_command_parses_case_insensitively_and_trimmed() {
-        let cases: [(&str, fn(&ChatInput) -> bool); 10] = [
+        type Case = (&'static str, fn(&ChatInput) -> bool);
+        let cases: [Case; 10] = [
             ("/exit", |i| matches!(i, ChatInput::ExitProcess)),
             ("/history", |i| matches!(i, ChatInput::ShowChatHistory)),
             ("/save", |i| matches!(i, ChatInput::SaveChatHistory)),
