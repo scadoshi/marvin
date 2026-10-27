@@ -57,6 +57,23 @@ fn next_chat_id() -> anyhow::Result<u16> {
     }
 }
 
+/// Marvin on `model`, with the math and web tools.
+fn agent(
+    api_key: &str,
+    model: &ModelInfo,
+    tavily_client: &Arc<TavilyClient>,
+) -> anyhow::Result<Agent<CompletionModel>> {
+    Ok(Client::new(api_key)?
+        .agent(&model.id)
+        .name("Marvin")
+        .preamble(PREAMBLE)
+        .max_tokens(model.max_tokens)
+        .tools(math::tools())
+        .tools(web::tools(tavily_client))
+        .default_max_turns(100)
+        .build())
+}
+
 impl Chat {
     pub async fn new() -> anyhow::Result<Self> {
         let id = next_chat_id()?;
@@ -75,20 +92,13 @@ impl Chat {
             println!("Select a model");
             horizontal_line();
             std::io::stdin().read_line(&mut input)?;
-            if let Some((_, ModelInfo { id, max_tokens, .. })) = model_options
+            if let Some(model) = model_options
                 .iter()
                 .enumerate()
                 .find(|(i, _)| (i + 1).to_string() == input.trim())
+                .map(|(_, model)| model)
             {
-                agent = Client::new(config.anthropic_api_key())?
-                    .agent(id)
-                    .name("Marvin")
-                    .preamble(PREAMBLE)
-                    .max_tokens(*max_tokens)
-                    .tools(math::tools())
-                    .tools(web::tools(&tavily_client))
-                    .default_max_turns(100)
-                    .build();
+                agent = self::agent(config.anthropic_api_key(), model, &tavily_client)?;
                 horizontal_line();
                 break;
             } else if input.trim() == "/exit" {
@@ -124,14 +134,12 @@ impl Chat {
             .find(|model| model.id == self.agent.model.model)
             .map_or("", |model| model.display_name.as_str())
     }
-    pub fn set_agent(&mut self, model: ModelInfo) -> anyhow::Result<()> {
-        self.agent = Client::new(self.config().anthropic_api_key())?
-            .agent(model.id)
-            .preamble(PREAMBLE)
-            .max_tokens(model.max_tokens)
-            .tools(math::tools())
-            .tools(web::tools(&self.tavily_client))
-            .build();
+    pub fn set_agent(&mut self, model: &ModelInfo) -> anyhow::Result<()> {
+        self.agent = agent(
+            self.config().anthropic_api_key(),
+            model,
+            &self.tavily_client,
+        )?;
         Ok(())
     }
     pub async fn send(&mut self, message: impl Into<Message>) -> anyhow::Result<String> {
@@ -229,5 +237,26 @@ impl Chat {
     }
     pub fn add_output_tokens_used(&mut self, output_tokens: usize) {
         self.total_output_tokens_used += output_tokens;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn the_agent_is_marvin_with_room_for_long_tool_chains() {
+        let model = ModelInfo {
+            id: String::from("claude-test"),
+            created_at: String::new(),
+            display_name: String::from("Claude Test"),
+            r#type: String::from("model"),
+            max_tokens: 1024,
+        };
+        let tavily = Arc::new(TavilyClient::new("test"));
+        let agent = agent("test", &model, &tavily).unwrap();
+        assert_eq!(agent.name.as_deref(), Some("Marvin"));
+        assert_eq!(agent.default_max_turns, Some(100));
+        assert_eq!(agent.model.model, "claude-test");
     }
 }

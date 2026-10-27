@@ -33,7 +33,7 @@ impl Chat {
                         continue;
                     };
                     self.clear_input();
-                    self.set_agent(selection)?;
+                    self.set_agent(&selection)?;
                     println!("Model updated: {}", self.model());
                     break;
                 }
