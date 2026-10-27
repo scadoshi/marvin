@@ -12,10 +12,11 @@ use crate::chat::config::Config;
 pub(crate) struct TavilyClient {
     client: Client,
     api_key: String,
+    base_url: String,
 }
 
 /// Base URL of the Tavily API.
-pub(super) const BASE_URL: &str = "https://api.tavily.com";
+const BASE_URL: &str = "https://api.tavily.com";
 
 /// Prints no key.
 impl fmt::Debug for TavilyClient {
@@ -27,10 +28,19 @@ impl fmt::Debug for TavilyClient {
 impl TavilyClient {
     /// A client that authenticates with `api_key`.
     pub(crate) fn new(api_key: impl Into<String>) -> Self {
+        Self::with_base_url(api_key, BASE_URL)
+    }
+    /// A client that authenticates with `api_key` and sends its requests to `base_url`.
+    pub(crate) fn with_base_url(api_key: impl Into<String>, base_url: impl Into<String>) -> Self {
         Self {
             client: Client::new(),
             api_key: api_key.into(),
+            base_url: base_url.into(),
         }
+    }
+    /// Where requests go, without a trailing path.
+    pub(crate) fn base_url(&self) -> &str {
+        &self.base_url
     }
     /// Posts `json` to `url` with the API key as a bearer token.
     ///

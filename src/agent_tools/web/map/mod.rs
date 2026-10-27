@@ -12,7 +12,7 @@ use schemars::schema_for;
 use serde_json::Value;
 use url::Url;
 
-use super::tavily::{BASE_URL, TavilyClient};
+use super::tavily::TavilyClient;
 use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 
 /// Tavily endpoint for the `map_website` tool.
@@ -55,7 +55,7 @@ impl Tool for Map {
     ///
     /// Returns an error if the request fails, the response body is not JSON, or Tavily answers with a status other than 200 OK.
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let url = Url::parse(BASE_URL)
+        let url = Url::parse(self.client.base_url())
             .into_tool_result()?
             .join(MAP_PATH)
             .into_tool_result()?;
