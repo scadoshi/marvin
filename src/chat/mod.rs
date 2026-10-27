@@ -46,7 +46,7 @@ pub(crate) const CHATS_DIR_NAME: &str = "chats";
 ///
 /// # Errors
 ///
-/// Returns an error if the directory cannot be created or read, or if every ID below `u16::MAX` is taken.
+/// Returns an error if the directory cannot be created or read, or if every ID up to `u16::MAX` is taken.
 fn next_chat_id() -> anyhow::Result<u16> {
     std::fs::create_dir_all(CHATS_DIR_NAME)?;
     let existing_chat_ids: HashSet<u16> = std::fs::read_dir(CHATS_DIR_NAME)?
@@ -60,7 +60,7 @@ fn next_chat_id() -> anyhow::Result<u16> {
                 .and_then(|str| str.parse::<u16>().ok())
         })
         .collect();
-    match (0..u16::MAX).find(|id| !existing_chat_ids.contains(id)) {
+    match (0..=u16::MAX).find(|id| !existing_chat_ids.contains(id)) {
         Some(id) => Ok(id),
         None => Err(anyhow::anyhow!(
             "Chat count has hit its limit of {}",
