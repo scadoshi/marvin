@@ -7,8 +7,8 @@ impl Chat {
         ui::horizontal_line();
         self.clear_input();
         println!("Current model: {}", self.model());
-        for (i, model) in self.model_options().iter().enumerate() {
-            println!("{}. {}", i + 1, model.display_name);
+        for (number, model) in (1..).zip(self.model_options()) {
+            println!("{number}. {}", model.display_name);
         }
         ui::horizontal_line();
         loop {

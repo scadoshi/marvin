@@ -123,8 +123,8 @@ impl Chat {
             anthropic::fetch_models(anthropic::API_BASE, config.anthropic_api_key()).await?;
         let client = Client::new(config.anthropic_api_key())?;
         println!("Current model: not set");
-        for (i, model) in model_options.iter().enumerate() {
-            println!("{}. {}", i + 1, model.display_name);
+        for (number, model) in (1..).zip(&model_options) {
+            println!("{number}. {}", model.display_name);
         }
         ui::horizontal_line();
         let Some(model) = select_model(&mut std::io::stdin().lock(), &model_options)? else {
@@ -243,13 +243,13 @@ impl Chat {
         self.total_input_tokens_used
     }
     pub(crate) fn add_input_tokens_used(&mut self, input_tokens: usize) {
-        self.total_input_tokens_used += input_tokens;
+        self.total_input_tokens_used = self.total_input_tokens_used.saturating_add(input_tokens);
     }
     pub(crate) fn total_output_tokens_used(&self) -> usize {
         self.total_output_tokens_used
     }
     pub(crate) fn add_output_tokens_used(&mut self, output_tokens: usize) {
-        self.total_output_tokens_used += output_tokens;
+        self.total_output_tokens_used = self.total_output_tokens_used.saturating_add(output_tokens);
     }
 }
 
