@@ -1,6 +1,4 @@
 pub mod request;
-#[allow(dead_code)]
-pub mod response;
 
 use std::sync::Arc;
 
