@@ -28,8 +28,9 @@ where
             Self::ShowChatHistory
         } else if value == "/save" {
             Self::SaveChatHistory
-        } else if value.contains("/import")
-            && let Some(id) = value.split_whitespace().find_map(|v| v.parse::<u16>().ok())
+        } else if let Some(id) = value
+            .strip_prefix("/import ")
+            .and_then(|id| id.trim().parse::<u16>().ok())
         {
             Self::ImportChatHistory(id)
         } else if value == "/tokens" {
@@ -104,6 +105,16 @@ mod tests {
     #[test]
     fn import_without_an_id_is_a_message() {
         assert!(matches!(parse("/import"), ChatInput::SendMessage(m) if m == "/import"));
+    }
+
+    #[test]
+    fn import_inside_a_message_is_a_message() {
+        for message in ["how do I /import 3 files", "/importer 3", "/import 3 4"] {
+            assert!(
+                matches!(parse(message), ChatInput::SendMessage(ref m) if m == message),
+                "{message}"
+            );
+        }
     }
 
     #[test]
