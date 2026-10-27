@@ -3,6 +3,8 @@ use rig::tool::{Tool, ToolError};
 use schemars::{JsonSchema, schema_for};
 use serde::{Deserialize, Serialize};
 
+use crate::agent_tools::{ToolErrorExt, ToolFailure};
+
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct DivideArgs {
     #[schemars(description = "left hand side \\ the first number \\ the dividend")]
@@ -33,6 +35,11 @@ impl Tool for Divide {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        Ok(args.lhs / args.rhs)
+        if args.rhs == 0 {
+            return Err(ToolFailure(String::from("division by zero")).into_tool_error());
+        }
+        args.lhs
+            .checked_div(args.rhs)
+            .ok_or_else(|| ToolFailure(String::from("overflow")).into_tool_error())
     }
 }

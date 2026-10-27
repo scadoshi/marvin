@@ -3,6 +3,8 @@ use rig::tool::{Tool, ToolError};
 use schemars::{JsonSchema, schema_for};
 use serde::{Deserialize, Serialize};
 
+use crate::agent_tools::{ToolErrorExt, ToolFailure};
+
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct SubtractArgs {
     #[schemars(description = "left hand side \\ the first number \\ the minuend")]
@@ -33,6 +35,8 @@ impl Tool for Subtract {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        Ok(args.lhs - args.rhs)
+        args.lhs
+            .checked_sub(args.rhs)
+            .ok_or_else(|| ToolFailure(String::from("overflow")).into_tool_error())
     }
 }
