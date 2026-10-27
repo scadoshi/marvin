@@ -173,6 +173,11 @@ impl Chat {
     pub(crate) fn id(&self) -> u16 {
         self.id
     }
+    /// Replaces the models offered by `/model`.
+    #[cfg(test)]
+    pub(crate) fn set_model_options(&mut self, model_options: Vec<ModelInfo>) {
+        self.model_options = model_options;
+    }
     /// Models the API key can use, in the order the API listed them.
     pub(crate) fn model_options(&self) -> &[ModelInfo] {
         self.model_options.as_slice()
@@ -271,9 +276,9 @@ impl Chat {
     pub(crate) fn input(&self) -> &ChatInput {
         &self.input
     }
-    /// Reads a line from stdin as the next input. A read error is printed and leaves no input.
-    pub(crate) fn read_input(&mut self) {
-        match input::read(&mut std::io::stdin().lock()) {
+    /// Reads a line from `reader` as the next input. A read error is printed and leaves no input.
+    pub(crate) fn read_input(&mut self, reader: &mut impl BufRead) {
+        match input::read(reader) {
             Ok(input) => self.input = input,
             Err(e) => {
                 eprintln!("Error: {e}");
@@ -305,11 +310,11 @@ impl Chat {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
-    use crate::test_server;
+    use crate::test_server::{self, Reply};
 
-    fn test_model() -> ModelInfo {
+    pub(crate) fn test_model() -> ModelInfo {
         ModelInfo {
             id: String::from("claude-test"),
             display_name: String::from("Claude Test"),
@@ -317,7 +322,7 @@ mod tests {
         }
     }
 
-    fn chat_against(base_url: &str) -> Chat {
+    pub(crate) fn chat_against(base_url: &str) -> Chat {
         let client = Client::builder()
             .api_key("test")
             .base_url(base_url)
@@ -346,12 +351,177 @@ mod tests {
         body["messages"].as_array().unwrap().clone()
     }
 
+    const STREAMED_TEXT: &str = r#"event: message_start
+data: {"type":"message_start","message":{"id":"msg_1","type":"message","role":"assistant","content":[],"model":"claude-test","stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":12,"output_tokens":1}}}
+
+event: content_block_start
+data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hi there"}}
+
+event: content_block_stop
+data: {"type":"content_block_stop","index":0}
+
+event: message_delta
+data: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"output_tokens":5}}
+
+event: message_stop
+data: {"type":"message_stop"}
+
+"#;
+
+    fn text_of(message: &Message) -> String {
+        serde_json::to_value(message).unwrap().to_string()
+    }
+
+    #[tokio::test]
+    async fn a_streamed_reply_joins_the_history_and_counts_its_tokens() {
+        let (base_url, requests) = test_server::serve(vec![Reply::events(STREAMED_TEXT)]).await;
+        let mut chat = chat_against(&base_url);
+        chat.stream(Message::user("hello")).await;
+        test_server::served(requests).await;
+        let history = chat.chat_history();
+        assert_eq!(history.len(), 2, "{history:#?}");
+        assert!(text_of(&history[0]).contains("hello"));
+        assert!(matches!(history[1], Message::Assistant { .. }));
+        assert!(text_of(&history[1]).contains("Hi there"), "{history:#?}");
+        assert_eq!(chat.total_output_tokens_used(), 5);
+        assert_eq!(chat.total_input_tokens_used(), 12);
+    }
+
+    const CALLS_ADD: &str = r#"event: message_start
+data: {"type":"message_start","message":{"id":"msg_a","type":"message","role":"assistant","content":[],"model":"claude-test","stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":10,"output_tokens":1}}}
+
+event: content_block_start
+data: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_a","name":"add","input":{}}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"{\"lhs\":2,\"rhs\":3}"}}
+
+event: content_block_stop
+data: {"type":"content_block_stop","index":0}
+
+event: message_delta
+data: {"type":"message_delta","delta":{"stop_reason":"tool_use","stop_sequence":null},"usage":{"output_tokens":3}}
+
+event: message_stop
+data: {"type":"message_stop"}
+
+"#;
+
+    const CALLS_MULTIPLY: &str = r#"event: message_start
+data: {"type":"message_start","message":{"id":"msg_m","type":"message","role":"assistant","content":[],"model":"claude-test","stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":10,"output_tokens":1}}}
+
+event: content_block_start
+data: {"type":"content_block_start","index":0,"content_block":{"type":"tool_use","id":"toolu_m","name":"multiply","input":{}}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","index":0,"delta":{"type":"input_json_delta","partial_json":"{\"lhs\":5,\"rhs\":4}"}}
+
+event: content_block_stop
+data: {"type":"content_block_stop","index":0}
+
+event: message_delta
+data: {"type":"message_delta","delta":{"stop_reason":"tool_use","stop_sequence":null},"usage":{"output_tokens":3}}
+
+event: message_stop
+data: {"type":"message_stop"}
+
+"#;
+
+    #[tokio::test]
+    async fn tool_calls_run_and_their_results_go_back_to_the_model() {
+        let (base_url, requests) = test_server::serve(vec![
+            Reply::events(CALLS_ADD),
+            Reply::events(CALLS_MULTIPLY),
+            Reply::events(STREAMED_TEXT),
+        ])
+        .await;
+        let mut chat = chat_against(&base_url);
+        chat.stream(Message::user("what is (2 + 3) * 4")).await;
+        let requests = test_server::served(requests).await;
+        assert_eq!(requests.len(), 3);
+        let after_add = sent_messages(&requests[1].body);
+        let after_multiply = sent_messages(&requests[2].body);
+        let last = |messages: &[serde_json::Value]| messages.last().unwrap().to_string();
+        assert!(
+            last(&after_add).contains("tool_result") && last(&after_add).contains("toolu_a"),
+            "{after_add:#?}"
+        );
+        assert!(last(&after_add).contains('5'), "{after_add:#?}");
+        assert!(
+            last(&after_multiply).contains("toolu_m") && last(&after_multiply).contains("20"),
+            "{after_multiply:#?}"
+        );
+        let history = chat.chat_history();
+        assert!(
+            text_of(history.last().unwrap()).contains("Hi there"),
+            "{history:#?}"
+        );
+    }
+
+    const SUMMARY: &str = r#"{"id":"msg_s","type":"message","role":"assistant","model":"claude-test","content":[{"type":"text","text":"We talked about Rust."}],"stop_reason":"end_turn","stop_sequence":null,"usage":{"input_tokens":20,"output_tokens":6}}"#;
+
+    #[tokio::test]
+    async fn compacting_replaces_the_history_with_the_summary() {
+        let (base_url, requests) = test_server::serve(vec![Reply::json(200, SUMMARY)]).await;
+        let mut chat = chat_against(&base_url);
+        chat.add_to_chat_history(Message::user("tell me about Rust"));
+        chat.add_to_chat_history(Message::assistant("Rust is a language."));
+        chat.compact_context().await.unwrap();
+        let requests = test_server::served(requests).await;
+        let sent = sent_messages(&requests[0].body);
+        assert_eq!(
+            sent.len(),
+            3,
+            "the history and the summarize prompt: {sent:#?}"
+        );
+        let history = chat.chat_history();
+        assert_eq!(history.len(), 1, "{history:#?}");
+        assert!(matches!(history[0], Message::Assistant { .. }));
+        assert!(text_of(&history[0]).contains("We talked about Rust."));
+    }
+
+    #[tokio::test]
+    async fn a_saved_chat_imports_into_another() {
+        let mut saved = chat_against("http://127.0.0.1:9");
+        saved.id = u16::MAX - 1;
+        saved.add_to_chat_history(Message::user("remember this"));
+        saved.add_to_chat_history(Message::assistant("remembered"));
+        std::fs::create_dir_all(CHATS_DIR_NAME).unwrap();
+        saved.save_chat_history_to_file().unwrap();
+        let mut imported = chat_against("http://127.0.0.1:9");
+        imported.add_to_chat_history(Message::user("already here"));
+        let result = imported.import_chat_history(saved.id);
+        let _ = std::fs::remove_file(format!("{CHATS_DIR_NAME}/{}.json", saved.id));
+        result.unwrap();
+        let texts: Vec<String> = imported.chat_history().iter().map(text_of).collect();
+        assert_eq!(texts.len(), 3, "{texts:#?}");
+        assert!(texts[0].contains("already here"));
+        assert_eq!(
+            texts[1..],
+            saved.chat_history().iter().map(text_of).collect::<Vec<_>>()[..]
+        );
+    }
+
+    #[tokio::test]
+    async fn importing_a_missing_chat_is_an_error_naming_it() {
+        let mut chat = chat_against("http://127.0.0.1:9");
+        let err = chat.import_chat_history(u16::MAX - 2).unwrap_err();
+        assert!(
+            format!("{err:#}").contains(&format!("ID: {}", u16::MAX - 2)),
+            "{err:#}"
+        );
+        assert_eq!(chat.chat_history().len(), 0);
+    }
+
     #[tokio::test]
     async fn a_streamed_message_reaches_the_model_once() {
         let (base_url, request) = test_server::serve_once(400, REJECTED).await;
         let mut chat = chat_against(&base_url);
         chat.stream(Message::user("hello")).await;
-        let messages = sent_messages(&request.await.unwrap().body);
+        let messages = sent_messages(&test_server::served(request).await.body);
         assert_eq!(messages.len(), 1, "{messages:#?}");
         assert_eq!(chat.chat_history().len(), 1, "the message is still kept");
     }
@@ -361,7 +531,7 @@ mod tests {
         let (base_url, request) = test_server::serve_once(400, REJECTED).await;
         let mut chat = chat_against(&base_url);
         assert!(chat.send(Message::user("hello")).await.is_err());
-        let messages = sent_messages(&request.await.unwrap().body);
+        let messages = sent_messages(&test_server::served(request).await.body);
         assert_eq!(messages.len(), 1, "{messages:#?}");
     }
 

@@ -63,7 +63,7 @@ mod tests {
         let models = fetch_models(&base_url, "key").await.unwrap();
         assert_eq!(models.len(), 1);
         assert_eq!(models[0].id, "claude-test");
-        let line = request.await.unwrap().line;
+        let line = test_server::served(request).await.line;
         assert!(line.starts_with("GET /v1/models?limit=1000 "), "{line}");
     }
 

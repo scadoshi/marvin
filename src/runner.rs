@@ -22,7 +22,7 @@ pub(crate) async fn run(mut chat: Chat) -> anyhow::Result<()> {
     loop {
         ui::horizontal_line();
         if chat.input().is_none() {
-            chat.read_input();
+            chat.read_input(&mut std::io::stdin().lock());
         }
         match chat.input() {
             ChatInput::ClearContext => chat.clear_context(),
@@ -35,7 +35,7 @@ pub(crate) async fn run(mut chat: Chat) -> anyhow::Result<()> {
                 }
             }
             ChatInput::ShowTokenUsage => chat.show_token_usage(),
-            ChatInput::SwitchModel => chat.switch_model(),
+            ChatInput::SwitchModel => chat.switch_model(&mut std::io::stdin().lock()),
             ChatInput::ShowContextSummary => chat.show_context_summary().await,
             ChatInput::CompactContext => chat.compact_context().await?,
             ChatInput::None => {}
