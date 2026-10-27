@@ -33,12 +33,12 @@ mod tests {
     use super::*;
 
     #[test]
-    pub(crate) fn test_formatted() {
+    fn test_formatted() {
         assert_eq!(formatted(234_567_890), "234,567,890".to_string());
     }
 
     #[test]
-    pub(crate) fn formatted_groups_by_three_from_the_right() {
+    fn formatted_groups_by_three_from_the_right() {
         for (n, want) in [
             (0, "0"),
             (999, "999"),
