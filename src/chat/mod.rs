@@ -138,22 +138,18 @@ impl Chat {
     }
     pub async fn send(&mut self, message: impl Into<Message>) -> anyhow::Result<String> {
         let message = message.into();
+        let history = self.chat_history().to_owned();
         self.add_to_chat_history(message.clone());
-        let response = self
-            .agent
-            .chat(message, self.chat_history().to_owned())
-            .await?;
+        let response = self.agent.chat(message, history).await?;
         self.add_to_chat_history(Message::assistant(response.clone()));
         Ok(response)
     }
     pub async fn stream(&mut self, message: impl Into<Message>) {
         horizontal_line();
         let message: Message = message.into();
+        let history = self.chat_history().to_owned();
         self.add_to_chat_history(message.clone());
-        let mut stream = self
-            .agent
-            .stream_chat(message, self.chat_history().to_owned())
-            .await;
+        let mut stream = self.agent.stream_chat(message, history).await;
         while let Some(result) = stream.next().await {
             match result {
                 Ok(MultiTurnStreamItem::FinalResponse(final_response)) => {
@@ -237,16 +233,69 @@ impl Chat {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_server;
 
-    #[tokio::test]
-    async fn the_agent_is_marvin_with_room_for_long_tool_chains() {
-        let model = ModelInfo {
+    fn test_model() -> ModelInfo {
+        ModelInfo {
             id: String::from("claude-test"),
             created_at: String::new(),
             display_name: String::from("Claude Test"),
             r#type: String::from("model"),
             max_tokens: 1024,
-        };
+        }
+    }
+
+    fn chat_against(base_url: &str) -> Chat {
+        let client = Client::builder()
+            .api_key("test")
+            .base_url(base_url)
+            .build()
+            .unwrap();
+        let tavily_client = Arc::new(TavilyClient::new("test"));
+        let model = test_model();
+        Chat {
+            id: 0,
+            agent: agent(&client, &model, &tavily_client),
+            client,
+            model_options: vec![model],
+            history: Vec::new(),
+            input: ChatInput::new(),
+            total_input_tokens_used: 0,
+            total_output_tokens_used: 0,
+            tavily_client,
+        }
+    }
+
+    const REJECTED: &str =
+        r#"{"type":"error","error":{"type":"invalid_request_error","message":"test"}}"#;
+
+    fn sent_messages(request: &str) -> Vec<serde_json::Value> {
+        let body: serde_json::Value = serde_json::from_str(request).unwrap();
+        body["messages"].as_array().unwrap().clone()
+    }
+
+    #[tokio::test]
+    async fn a_streamed_message_reaches_the_model_once() {
+        let (base_url, request) = test_server::serve_once(400, REJECTED).await;
+        let mut chat = chat_against(&base_url);
+        chat.stream(Message::user("hello")).await;
+        let messages = sent_messages(&request.await.unwrap());
+        assert_eq!(messages.len(), 1, "{messages:#?}");
+        assert_eq!(chat.chat_history().len(), 1, "the message is still kept");
+    }
+
+    #[tokio::test]
+    async fn a_sent_message_reaches_the_model_once() {
+        let (base_url, request) = test_server::serve_once(400, REJECTED).await;
+        let mut chat = chat_against(&base_url);
+        assert!(chat.send(Message::user("hello")).await.is_err());
+        let messages = sent_messages(&request.await.unwrap());
+        assert_eq!(messages.len(), 1, "{messages:#?}");
+    }
+
+    #[tokio::test]
+    async fn the_agent_is_marvin_with_room_for_long_tool_chains() {
+        let model = test_model();
         let tavily = Arc::new(TavilyClient::new("test"));
         let client = Client::new("test").unwrap();
         let agent = agent(&client, &model, &tavily);
