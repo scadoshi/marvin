@@ -360,6 +360,18 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn exiting_an_empty_chat_saves_no_file() {
+        let mut chat = chat_against("http://127.0.0.1:9");
+        chat.id = u16::MAX;
+        let path = format!("{CHATS_DIR_NAME}/{}.json", chat.id);
+        std::fs::create_dir_all(CHATS_DIR_NAME).unwrap();
+        chat.exit_process().unwrap();
+        let saved = std::path::Path::new(&path).exists();
+        let _ = std::fs::remove_file(&path);
+        assert!(!saved, "{path} was written for an empty chat");
+    }
+
+    #[tokio::test]
     async fn a_failed_send_leaves_the_history_as_it_was() {
         let (base_url, _) = test_server::serve_once(400, REJECTED).await;
         let mut chat = chat_against(&base_url);
