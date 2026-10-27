@@ -182,16 +182,16 @@ impl Chat {
     pub(crate) fn set_agent(&mut self, model: &ModelInfo) {
         self.agent = agent(&self.client, model, &self.tavily_client);
     }
-    /// Sends `message` with the history and returns the whole reply. Both join the history.
+    /// Sends `message` with the history and returns the whole reply. Both join the history once the reply arrives.
     ///
     /// # Errors
     ///
-    /// Returns an error if the model request fails. The message stays in the history.
+    /// Returns an error if the model request fails. The history is then unchanged.
     pub(crate) async fn send(&mut self, message: impl Into<Message>) -> anyhow::Result<String> {
         let message = message.into();
         let history = self.chat_history().to_owned();
-        self.add_to_chat_history(message.clone());
-        let response = self.agent.chat(message, history).await?;
+        let response = self.agent.chat(message.clone(), history).await?;
+        self.add_to_chat_history(message);
         self.add_to_chat_history(Message::assistant(response.clone()));
         Ok(response)
     }
@@ -357,6 +357,15 @@ mod tests {
         assert!(chat.send(Message::user("hello")).await.is_err());
         let messages = sent_messages(&request.await.unwrap().body);
         assert_eq!(messages.len(), 1, "{messages:#?}");
+    }
+
+    #[tokio::test]
+    async fn a_failed_send_leaves_the_history_as_it_was() {
+        let (base_url, _) = test_server::serve_once(400, REJECTED).await;
+        let mut chat = chat_against(&base_url);
+        chat.add_to_chat_history(Message::user("earlier"));
+        assert!(chat.send(Message::user("summarize")).await.is_err());
+        assert_eq!(chat.chat_history().len(), 1);
     }
 
     #[test]
