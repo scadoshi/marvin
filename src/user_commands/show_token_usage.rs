@@ -1,5 +1,5 @@
 use crate::chat::Chat;
-use crate::ui::horizontal_line;
+use crate::ui;
 
 fn formatted(n: usize) -> String {
     let mut str = n.to_string();
@@ -12,7 +12,7 @@ fn formatted(n: usize) -> String {
 impl Chat {
     pub(crate) fn show_token_usage(&mut self) {
         self.clear_input();
-        horizontal_line();
+        ui::horizontal_line();
         println!(
             "Total Input Tokens Used: {}",
             formatted(self.total_input_tokens_used())

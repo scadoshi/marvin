@@ -1,7 +1,7 @@
 use rig::message::{AssistantContent, Message, UserContent};
 
 use crate::chat::Chat;
-use crate::ui::horizontal_line;
+use crate::ui;
 
 pub(crate) const HISTORY_LEN: usize = 10;
 /// Characters of a message shown before it is cut off with `...`.
@@ -22,13 +22,13 @@ impl Chat {
     pub(crate) fn show_chat_history(&mut self) {
         if self.chat_history().is_empty() {
             self.clear_input();
-            horizontal_line();
+            ui::horizontal_line();
             println!("No chat history");
             return;
         }
-        horizontal_line();
+        ui::horizontal_line();
         println!("Showing last {HISTORY_LEN} messages");
-        horizontal_line();
+        ui::horizontal_line();
         self.clear_input();
         let messages: Vec<_> = self
             .chat_history()

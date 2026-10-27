@@ -20,7 +20,7 @@ use crate::agent_tools::web::tavily::TavilyClient;
 use crate::agent_tools::{math, web};
 use crate::anthropic::{self, ModelInfo};
 use crate::chat::config::Config;
-use crate::ui::{horizontal_line, welcome_message};
+use crate::ui;
 
 pub(crate) static PREAMBLE: &str = include_str!("preamble.txt");
 
@@ -95,7 +95,7 @@ fn select_model<'models>(
     let mut input = String::new();
     loop {
         println!("Select a model");
-        horizontal_line();
+        ui::horizontal_line();
         input.clear();
         if reader.read_line(&mut input)? == 0 || input.trim() == "/exit" {
             return Ok(None);
@@ -116,7 +116,7 @@ impl Chat {
     /// Starts a chat: loads the config and models and asks which model to use. `None` when the user leaves instead.
     pub(crate) async fn new() -> anyhow::Result<Option<Self>> {
         let id = next_chat_id()?;
-        welcome_message(id);
+        ui::welcome_message(id);
         let config = Config::from_env()?;
         let tavily_client = Arc::new(TavilyClient::from(&config));
         let model_options =
@@ -126,13 +126,13 @@ impl Chat {
         for (i, model) in model_options.iter().enumerate() {
             println!("{}. {}", i + 1, model.display_name);
         }
-        horizontal_line();
+        ui::horizontal_line();
         let Some(model) = select_model(&mut std::io::stdin().lock(), &model_options)? else {
             println!("Farewell!");
             return Ok(None);
         };
         let agent = self::agent(&client, model, &tavily_client);
-        horizontal_line();
+        ui::horizontal_line();
         Ok(Some(Self {
             id,
             client,
@@ -169,7 +169,7 @@ impl Chat {
         Ok(response)
     }
     pub(crate) async fn stream(&mut self, message: impl Into<Message>) {
-        horizontal_line();
+        ui::horizontal_line();
         let message: Message = message.into();
         let history = self.chat_history().to_owned();
         self.add_to_chat_history(message.clone());

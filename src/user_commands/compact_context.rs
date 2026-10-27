@@ -1,11 +1,11 @@
 use rig::message::Message;
 
 use crate::chat::Chat;
-use crate::ui::horizontal_line;
+use crate::ui;
 
 impl Chat {
     pub(crate) async fn compact_context(&mut self) -> anyhow::Result<()> {
-        horizontal_line();
+        ui::horizontal_line();
         self.clear_input();
         let prompt = "Provide a concise context summary of our conversation that could be used to continue this chat. Include key decisions made, current task state, and any important details. Write it as a brief paragraph, not a list.";
         let response = self.send(Message::user(prompt)).await?;

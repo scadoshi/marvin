@@ -1,7 +1,5 @@
 use std::fmt;
 
-use dotenvy::dotenv;
-
 pub(crate) struct Config {
     anthropic_api_key: String,
     tavily_api_key: String,
@@ -16,7 +14,7 @@ impl fmt::Debug for Config {
 
 impl Config {
     pub(crate) fn from_env() -> anyhow::Result<Self> {
-        dotenv().ok();
+        dotenvy::dotenv().ok();
         let anthropic_api_key = std::env::var("ANTHROPIC_API_KEY")?;
         let tavily_api_key = std::env::var("TAVILY_API_KEY")?;
         Ok(Self {

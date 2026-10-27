@@ -1,4 +1,4 @@
-use std::io::{Write, stdout};
+use std::io::{self, Write};
 
 const WIDTH: usize = 50;
 const HORIZONTAL_LINE_STR: &str = "-";
@@ -12,7 +12,7 @@ pub(crate) fn welcome_message(chat_id: u16) {
     for _ in 0..3 {
         std::thread::sleep(std::time::Duration::from_millis(500));
         print!(".");
-        let _ = stdout().flush();
+        let _ = io::stdout().flush();
     }
     println!();
     horizontal_line();

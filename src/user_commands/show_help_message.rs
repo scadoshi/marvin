@@ -1,11 +1,11 @@
 use crate::chat::Chat;
-use crate::ui::horizontal_line;
+use crate::ui;
 use crate::user_commands::show_chat_history::HISTORY_LEN;
 
 impl Chat {
     pub(crate) fn show_help_message(&mut self) {
         self.clear_input();
-        horizontal_line();
+        ui::horizontal_line();
         println!("Commands:");
         println!("  /model     - switch between available Claude models");
         println!("  /tokens    - show token usage");

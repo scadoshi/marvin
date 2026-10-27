@@ -1,19 +1,19 @@
 use crate::chat::Chat;
 use crate::chat::input::ChatInput;
-use crate::ui::horizontal_line;
+use crate::ui;
 
 impl Chat {
     pub(crate) fn switch_model(&mut self) {
-        horizontal_line();
+        ui::horizontal_line();
         self.clear_input();
         println!("Current model: {}", self.model());
         for (i, model) in self.model_options().iter().enumerate() {
             println!("{}. {}", i + 1, model.display_name);
         }
-        horizontal_line();
+        ui::horizontal_line();
         loop {
             println!("Select a model");
-            horizontal_line();
+            ui::horizontal_line();
             self.read_input();
             match self.input() {
                 ChatInput::SendMessage(message) => {

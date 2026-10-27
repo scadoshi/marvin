@@ -1,14 +1,14 @@
 use rig::message::Message;
 
 use crate::chat::{Chat, ChatInput};
-use crate::ui::horizontal_line;
+use crate::ui;
 
 pub(crate) async fn run(mut chat: Chat) -> anyhow::Result<()> {
     println!("Agent: {}", chat.model());
-    horizontal_line();
+    ui::horizontal_line();
     println!("Type a message and click enter to submit");
     loop {
-        horizontal_line();
+        ui::horizontal_line();
         if chat.input().is_none() {
             chat.read_input();
         }
