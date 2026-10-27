@@ -37,7 +37,7 @@ impl Tool for Map {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Generate a site map by discovering all URLs on a website. Returns a list of discovered URLs without extracting content. Use to understand site structure before crawling.".to_string(),
-            parameters: serde_json::to_value(schema_for!(MapArgs)).expect("schema is serializable"),
+            parameters: schema_for!(MapArgs).into(),
         }
     }
 

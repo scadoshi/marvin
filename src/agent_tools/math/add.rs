@@ -27,7 +27,7 @@ impl Tool for Add {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "returns sum of two given numbers, lhs and rhs".to_string(),
-            parameters: serde_json::to_value(schema_for!(AddArgs)).expect("schema is serializable"),
+            parameters: schema_for!(AddArgs).into(),
         }
     }
 

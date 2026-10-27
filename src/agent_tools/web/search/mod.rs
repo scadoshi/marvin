@@ -37,8 +37,7 @@ impl Tool for Search {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Search the web for current information using Tavily API".to_string(),
-            parameters: serde_json::to_value(schema_for!(SearchArgs))
-                .expect("schema is serializable"),
+            parameters: schema_for!(SearchArgs).into(),
         }
     }
 

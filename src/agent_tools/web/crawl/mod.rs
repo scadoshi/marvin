@@ -37,7 +37,7 @@ impl Tool for Crawl {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Crawl a website starting from a root URL, exploring linked pages and extracting content. Use for indexing documentation sites or knowledge bases.".to_string(),
-            parameters: serde_json::to_value(schema_for!(CrawlArgs)).expect("schema is serializable"),
+            parameters: schema_for!(CrawlArgs).into(),
         }
     }
 

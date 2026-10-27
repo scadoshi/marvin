@@ -37,7 +37,7 @@ impl Tool for Extract {
         ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Extract clean content from one or more URLs. Returns the full text content, optionally with images.".to_string(),
-            parameters: serde_json::to_value(schema_for!(ExtractArgs)).expect("schema is serializable"),
+            parameters: schema_for!(ExtractArgs).into(),
         }
     }
 

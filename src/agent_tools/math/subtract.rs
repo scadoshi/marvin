@@ -29,8 +29,7 @@ impl Tool for Subtract {
             description:
                 "returns difference of two given numbers, lhs and rhs (rhs is subtracted from lhs)"
                     .to_string(),
-            parameters: serde_json::to_value(schema_for!(SubtractArgs))
-                .expect("schema is serializable"),
+            parameters: schema_for!(SubtractArgs).into(),
         }
     }
 
