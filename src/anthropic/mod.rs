@@ -11,7 +11,7 @@ struct ModelsResponse {
 
 #[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
-pub struct ModelInfo {
+pub(crate) struct ModelInfo {
     pub id: String,
     pub created_at: String,
     pub display_name: String,
@@ -20,10 +20,10 @@ pub struct ModelInfo {
 }
 
 /// Where the Anthropic API lives.
-pub const API_BASE: &str = "https://api.anthropic.com";
+pub(crate) const API_BASE: &str = "https://api.anthropic.com";
 
 /// Lists the models the API key can use.
-pub async fn fetch_models(base_url: &str, api_key: &str) -> anyhow::Result<Vec<ModelInfo>> {
+pub(crate) async fn fetch_models(base_url: &str, api_key: &str) -> anyhow::Result<Vec<ModelInfo>> {
     let response = Client::new()
         .get(format!("{base_url}/v1/models"))
         .header("anthropic-version", "2023-06-01")

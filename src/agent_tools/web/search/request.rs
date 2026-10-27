@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[schemars(
     description = "Search category. 'news' retrieves real-time updates about politics, sports, and current events. 'general' is for broader searches across a wide range of sources."
 )]
-pub enum Topic {
+pub(crate) enum Topic {
     #[default]
     General,
     News,
@@ -17,7 +17,7 @@ pub enum Topic {
 #[schemars(
     description = "Depth of search. 'advanced' (2 credits) returns more relevant snippets. 'basic', 'fast', 'ultrafast' (1 credit) trade relevance for speed."
 )]
-pub enum SearchDepth {
+pub(crate) enum SearchDepth {
     Advanced,
     #[default]
     Basic,
@@ -28,7 +28,7 @@ pub enum SearchDepth {
 #[derive(Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(description = "Filter results by publish date.")]
-pub enum TimeRange {
+pub(crate) enum TimeRange {
     #[default]
     None,
     Day,
@@ -38,7 +38,7 @@ pub enum TimeRange {
 }
 
 #[derive(Serialize, Deserialize, JsonSchema)]
-pub struct SearchArgs {
+pub(crate) struct SearchArgs {
     #[schemars(description = "The search query to execute")]
     pub query: String,
 

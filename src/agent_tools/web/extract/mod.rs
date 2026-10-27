@@ -1,4 +1,4 @@
-pub mod request;
+pub(crate) mod request;
 
 use std::sync::Arc;
 
@@ -15,12 +15,12 @@ use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 
 const EXTRACT_PATH: &str = "/extract";
 
-pub struct Extract {
+pub(crate) struct Extract {
     client: Arc<TavilyClient>,
 }
 
 impl Extract {
-    pub fn new(client: Arc<TavilyClient>) -> Self {
+    pub(crate) fn new(client: Arc<TavilyClient>) -> Self {
         Self { client }
     }
 }

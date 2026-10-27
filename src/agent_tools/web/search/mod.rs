@@ -1,4 +1,4 @@
-pub mod request;
+pub(crate) mod request;
 
 use std::sync::Arc;
 
@@ -15,12 +15,12 @@ use crate::agent_tools::{ToolErrorExt, ToolFailure, ToolResultExt};
 
 const SEARCH_PATH: &str = "/search";
 
-pub struct Search {
+pub(crate) struct Search {
     client: Arc<TavilyClient>,
 }
 
 impl Search {
-    pub fn new(client: Arc<TavilyClient>) -> Self {
+    pub(crate) fn new(client: Arc<TavilyClient>) -> Self {
         Self { client }
     }
 }

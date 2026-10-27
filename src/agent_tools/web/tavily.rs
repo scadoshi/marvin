@@ -4,7 +4,7 @@ use url::Url;
 
 use crate::chat::config::Config;
 
-pub struct TavilyClient {
+pub(crate) struct TavilyClient {
     client: Client,
     api_key: String,
 }
@@ -12,13 +12,13 @@ pub struct TavilyClient {
 pub(super) const BASE_URL: &str = "https://api.tavily.com";
 
 impl TavilyClient {
-    pub fn new(api_key: impl Into<String>) -> Self {
+    pub(crate) fn new(api_key: impl Into<String>) -> Self {
         Self {
             client: Client::new(),
             api_key: api_key.into(),
         }
     }
-    pub async fn post(&self, url: Url, json: Value) -> Result<Response, reqwest::Error> {
+    pub(crate) async fn post(&self, url: Url, json: Value) -> Result<Response, reqwest::Error> {
         self.client
             .post(url)
             .bearer_auth(&self.api_key)

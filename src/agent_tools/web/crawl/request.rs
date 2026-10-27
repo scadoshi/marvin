@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(description = "Depth of content extraction.")]
-pub enum ExtractDepth {
+pub(crate) enum ExtractDepth {
     #[default]
     Basic,
     Advanced,
@@ -13,14 +13,14 @@ pub enum ExtractDepth {
 #[derive(Default, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 #[schemars(description = "Format of the extracted content.")]
-pub enum CrawlFormat {
+pub(crate) enum CrawlFormat {
     #[default]
     Markdown,
     Text,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema)]
-pub struct CrawlArgs {
+pub(crate) struct CrawlArgs {
     #[schemars(description = "The root URL to begin the crawl")]
     pub url: String,
 

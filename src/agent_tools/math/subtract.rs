@@ -6,14 +6,14 @@ use serde::{Deserialize, Serialize};
 use crate::agent_tools::{ToolErrorExt, ToolFailure};
 
 #[derive(Serialize, Deserialize, JsonSchema)]
-pub struct SubtractArgs {
+pub(crate) struct SubtractArgs {
     #[schemars(description = "left hand side \\ the first number \\ the minuend")]
     pub lhs: i64,
     #[schemars(description = "right hand side \\ the second number \\ the subtrahend")]
     pub rhs: i64,
 }
 
-pub struct Subtract;
+pub(crate) struct Subtract;
 
 // rig's Tool trait declares these methods async.
 #[allow(clippy::unused_async_trait_impl)]

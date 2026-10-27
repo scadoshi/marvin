@@ -2,7 +2,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, JsonSchema)]
-pub struct MapArgs {
+pub(crate) struct MapArgs {
     #[schemars(description = "The root URL to begin the mapping")]
     pub url: String,
 

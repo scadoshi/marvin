@@ -1,11 +1,11 @@
-pub mod config;
-pub mod input;
+pub(crate) mod config;
+pub(crate) mod input;
 use std::collections::HashSet;
 use std::io::BufRead;
 use std::sync::Arc;
 
 use futures::StreamExt;
-pub use input::ChatInput;
+pub(crate) use input::ChatInput;
 use rig::agent::{Agent, MultiTurnStreamItem};
 use rig::client::CompletionClient;
 use rig::completion::Chat as ChatTrait;
@@ -21,9 +21,9 @@ use crate::anthropic::{self, ModelInfo};
 use crate::chat::config::Config;
 use crate::ui::{horizontal_line, welcome_message};
 
-pub static PREAMBLE: &str = include_str!("preamble.txt");
+pub(crate) static PREAMBLE: &str = include_str!("preamble.txt");
 
-pub struct Chat {
+pub(crate) struct Chat {
     id: u16,
     client: Client,
     model_options: Vec<ModelInfo>,
@@ -35,7 +35,7 @@ pub struct Chat {
     tavily_client: Arc<TavilyClient>,
 }
 
-pub const CHATS_DIR_NAME: &str = "chats";
+pub(crate) const CHATS_DIR_NAME: &str = "chats";
 fn next_chat_id() -> anyhow::Result<u16> {
     std::fs::create_dir_all(CHATS_DIR_NAME)?;
     let existing_chat_ids: HashSet<u16> = std::fs::read_dir(CHATS_DIR_NAME)?
@@ -102,7 +102,7 @@ fn select_model<'models>(
 
 impl Chat {
     /// Starts a chat: loads the config and models and asks which model to use. `None` when the user leaves instead.
-    pub async fn new() -> anyhow::Result<Option<Self>> {
+    pub(crate) async fn new() -> anyhow::Result<Option<Self>> {
         let id = next_chat_id()?;
         welcome_message(id);
         let config = Config::from_env()?;
@@ -133,22 +133,22 @@ impl Chat {
             tavily_client,
         }))
     }
-    pub fn id(&self) -> u16 {
+    pub(crate) fn id(&self) -> u16 {
         self.id
     }
-    pub fn model_options(&self) -> &[ModelInfo] {
+    pub(crate) fn model_options(&self) -> &[ModelInfo] {
         self.model_options.as_slice()
     }
-    pub fn model(&self) -> &str {
+    pub(crate) fn model(&self) -> &str {
         self.model_options()
             .iter()
             .find(|model| model.id == self.agent.model.model)
             .map_or("", |model| model.display_name.as_str())
     }
-    pub fn set_agent(&mut self, model: &ModelInfo) {
+    pub(crate) fn set_agent(&mut self, model: &ModelInfo) {
         self.agent = agent(&self.client, model, &self.tavily_client);
     }
-    pub async fn send(&mut self, message: impl Into<Message>) -> anyhow::Result<String> {
+    pub(crate) async fn send(&mut self, message: impl Into<Message>) -> anyhow::Result<String> {
         let message = message.into();
         let history = self.chat_history().to_owned();
         self.add_to_chat_history(message.clone());
@@ -156,7 +156,7 @@ impl Chat {
         self.add_to_chat_history(Message::assistant(response.clone()));
         Ok(response)
     }
-    pub async fn stream(&mut self, message: impl Into<Message>) {
+    pub(crate) async fn stream(&mut self, message: impl Into<Message>) {
         horizontal_line();
         let message: Message = message.into();
         let history = self.chat_history().to_owned();
@@ -195,26 +195,26 @@ impl Chat {
             }
         }
     }
-    pub fn chat_history(&self) -> &[Message] {
+    pub(crate) fn chat_history(&self) -> &[Message] {
         self.history.as_slice()
     }
-    pub fn clear_chat_history(&mut self) {
+    pub(crate) fn clear_chat_history(&mut self) {
         self.history.clear();
     }
-    pub fn add_to_chat_history(&mut self, message: impl Into<Message>) {
+    pub(crate) fn add_to_chat_history(&mut self, message: impl Into<Message>) {
         self.history.push(message.into());
     }
-    pub fn save_chat_history_to_file(&self) -> anyhow::Result<()> {
+    pub(crate) fn save_chat_history_to_file(&self) -> anyhow::Result<()> {
         let file_path = format!("{}/{}.json", CHATS_DIR_NAME, self.id());
         let file = std::fs::File::create(file_path)?;
         let chat_history_json = serde_json::to_value(self.chat_history())?;
         serde_json::to_writer_pretty(file, &chat_history_json)?;
         Ok(())
     }
-    pub fn input(&self) -> &ChatInput {
+    pub(crate) fn input(&self) -> &ChatInput {
         &self.input
     }
-    pub fn read_input(&mut self) {
+    pub(crate) fn read_input(&mut self) {
         match input::read(&mut std::io::stdin().lock()) {
             Ok(input) => self.input = input,
             Err(e) => {
@@ -224,19 +224,19 @@ impl Chat {
             }
         }
     }
-    pub fn clear_input(&mut self) {
+    pub(crate) fn clear_input(&mut self) {
         self.input.clear();
     }
-    pub fn total_input_tokens_used(&self) -> usize {
+    pub(crate) fn total_input_tokens_used(&self) -> usize {
         self.total_input_tokens_used
     }
-    pub fn add_input_tokens_used(&mut self, input_tokens: usize) {
+    pub(crate) fn add_input_tokens_used(&mut self, input_tokens: usize) {
         self.total_input_tokens_used += input_tokens;
     }
-    pub fn total_output_tokens_used(&self) -> usize {
+    pub(crate) fn total_output_tokens_used(&self) -> usize {
         self.total_output_tokens_used
     }
-    pub fn add_output_tokens_used(&mut self, output_tokens: usize) {
+    pub(crate) fn add_output_tokens_used(&mut self, output_tokens: usize) {
         self.total_output_tokens_used += output_tokens;
     }
 }

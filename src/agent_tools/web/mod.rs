@@ -7,13 +7,13 @@ use rig::tool::ToolDyn;
 use search::Search;
 use tavily::TavilyClient;
 
-pub mod crawl;
-pub mod extract;
-pub mod map;
-pub mod search;
-pub mod tavily;
+pub(crate) mod crawl;
+pub(crate) mod extract;
+pub(crate) mod map;
+pub(crate) mod search;
+pub(crate) mod tavily;
 
-pub fn tools(client: &Arc<TavilyClient>) -> Vec<Box<dyn ToolDyn>> {
+pub(crate) fn tools(client: &Arc<TavilyClient>) -> Vec<Box<dyn ToolDyn>> {
     vec![
         Box::new(Search::new(Arc::clone(client))),
         Box::new(Extract::new(Arc::clone(client))),

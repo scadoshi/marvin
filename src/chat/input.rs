@@ -1,7 +1,7 @@
 use std::io::BufRead;
 
 #[derive(Debug, Clone, Default)]
-pub enum ChatInput {
+pub(crate) enum ChatInput {
     ExitProcess,
     ShowChatHistory,
     SaveChatHistory,
@@ -56,7 +56,7 @@ where
 }
 
 /// Reads one line from `reader` and parses it. The end of input reads as `/exit`.
-pub fn read(reader: &mut impl BufRead) -> std::io::Result<ChatInput> {
+pub(crate) fn read(reader: &mut impl BufRead) -> std::io::Result<ChatInput> {
     let mut line = String::new();
     if reader.read_line(&mut line)? == 0 {
         return Ok(ChatInput::ExitProcess);
@@ -65,13 +65,13 @@ pub fn read(reader: &mut impl BufRead) -> std::io::Result<ChatInput> {
 }
 
 impl ChatInput {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self::default()
     }
-    pub fn clear(&mut self) {
+    pub(crate) fn clear(&mut self) {
         *self = Self::None;
     }
-    pub fn is_none(&self) -> bool {
+    pub(crate) fn is_none(&self) -> bool {
         matches!(self, ChatInput::None)
     }
 }

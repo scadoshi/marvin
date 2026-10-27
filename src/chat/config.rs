@@ -1,12 +1,12 @@
 use dotenvy::dotenv;
 
-pub struct Config {
+pub(crate) struct Config {
     anthropic_api_key: String,
     tavily_api_key: String,
 }
 
 impl Config {
-    pub fn from_env() -> anyhow::Result<Self> {
+    pub(crate) fn from_env() -> anyhow::Result<Self> {
         dotenv().ok();
         let anthropic_api_key = std::env::var("ANTHROPIC_API_KEY")?;
         let tavily_api_key = std::env::var("TAVILY_API_KEY")?;
@@ -15,10 +15,10 @@ impl Config {
             tavily_api_key,
         })
     }
-    pub fn anthropic_api_key(&self) -> &str {
+    pub(crate) fn anthropic_api_key(&self) -> &str {
         &self.anthropic_api_key
     }
-    pub fn tavily_api_key(&self) -> &str {
+    pub(crate) fn tavily_api_key(&self) -> &str {
         &self.tavily_api_key
     }
 }

@@ -3,7 +3,7 @@ use rig::message::Message;
 use crate::chat::{Chat, ChatInput};
 use crate::ui::horizontal_line;
 
-pub async fn run(mut chat: Chat) -> anyhow::Result<()> {
+pub(crate) async fn run(mut chat: Chat) -> anyhow::Result<()> {
     println!("Agent: {}", chat.model());
     horizontal_line();
     println!("Type a message and click enter to submit");

@@ -1,5 +1,5 @@
-pub mod math;
-pub mod web;
+pub(crate) mod math;
+pub(crate) mod web;
 use rig::tool::ToolError;
 use thiserror::Error;
 

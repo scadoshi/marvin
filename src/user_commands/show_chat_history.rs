@@ -3,7 +3,7 @@ use rig::message::{AssistantContent, Message, UserContent};
 use crate::chat::Chat;
 use crate::ui::horizontal_line;
 
-pub const HISTORY_LEN: usize = 10;
+pub(crate) const HISTORY_LEN: usize = 10;
 /// Characters of a message shown before it is cut off with `...`.
 const TRUNCATE_AT: usize = 300;
 

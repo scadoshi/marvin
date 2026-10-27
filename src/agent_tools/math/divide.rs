@@ -6,14 +6,14 @@ use serde::{Deserialize, Serialize};
 use crate::agent_tools::{ToolErrorExt, ToolFailure};
 
 #[derive(Serialize, Deserialize, JsonSchema)]
-pub struct DivideArgs {
+pub(crate) struct DivideArgs {
     #[schemars(description = "left hand side \\ the first number \\ the dividend")]
     pub lhs: i64,
     #[schemars(description = "right hand side \\ the second number \\ the divisor")]
     pub rhs: i64,
 }
 
-pub struct Divide;
+pub(crate) struct Divide;
 
 // rig's Tool trait declares these methods async.
 #[allow(clippy::unused_async_trait_impl)]
