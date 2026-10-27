@@ -80,7 +80,8 @@ impl Chat {
         welcome_message(id);
         let config = Config::from_env()?;
         let tavily_client = Arc::new(TavilyClient::from(&config));
-        let model_options = anthropic::fetch_models(config.anthropic_api_key()).await?;
+        let model_options =
+            anthropic::fetch_models(anthropic::API_BASE, config.anthropic_api_key()).await?;
         let agent: Agent<CompletionModel>;
         let mut input = String::new();
         println!("Current model: not set");

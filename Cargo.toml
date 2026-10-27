@@ -16,6 +16,9 @@ thiserror = "2.0.18"
 tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
 url = "2.5.8"
 
+[dev-dependencies]
+tokio = { version = "1.49.0", features = ["io-util", "macros", "net", "rt-multi-thread"] }
+
 [lints.clippy]
 pedantic = { level = "warn", priority = -1 }
 must_use_candidate = "allow"
