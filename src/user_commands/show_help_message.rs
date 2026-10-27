@@ -2,12 +2,8 @@ use crate::chat::Chat;
 use crate::ui::horizontal_line;
 use crate::user_commands::show_chat_history::HISTORY_LEN;
 
-pub trait ShowHelpMessage {
-    fn show_help_message(&mut self);
-}
-
-impl ShowHelpMessage for Chat {
-    fn show_help_message(&mut self) {
+impl Chat {
+    pub(crate) fn show_help_message(&mut self) {
         self.clear_input();
         horizontal_line();
         println!("Commands:");

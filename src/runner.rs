@@ -2,10 +2,6 @@ use rig::message::Message;
 
 use crate::chat::{Chat, ChatInput};
 use crate::ui::horizontal_line;
-use crate::user_commands::{
-    ClearContext, CompactContext, ExitProcess, ImportChatHistory, SaveChatHistory, ShowChatHistory,
-    ShowContextSummary, ShowHelpMessage, ShowTokenUsage, SwitchModel,
-};
 
 pub struct Runner;
 

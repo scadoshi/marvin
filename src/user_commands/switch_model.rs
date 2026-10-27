@@ -2,12 +2,8 @@ use crate::chat::Chat;
 use crate::chat::input::ChatInput;
 use crate::ui::horizontal_line;
 
-pub trait SwitchModel {
-    fn switch_model(&mut self) -> anyhow::Result<()>;
-}
-
-impl SwitchModel for Chat {
-    fn switch_model(&mut self) -> anyhow::Result<()> {
+impl Chat {
+    pub(crate) fn switch_model(&mut self) -> anyhow::Result<()> {
         horizontal_line();
         self.clear_input();
         println!("Current model: {}", self.model());

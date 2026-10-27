@@ -5,12 +5,8 @@ use crate::ui::horizontal_line;
 
 pub const HISTORY_LEN: usize = 10;
 
-pub trait ShowChatHistory {
-    fn show_chat_history(&mut self);
-}
-
-impl ShowChatHistory for Chat {
-    fn show_chat_history(&mut self) {
+impl Chat {
+    pub(crate) fn show_chat_history(&mut self) {
         const TRUNCATE_AT: usize = 300;
         if self.chat_history().is_empty() {
             self.clear_input();

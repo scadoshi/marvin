@@ -1,12 +1,8 @@
 use crate::chat::{CHATS_DIR_NAME, Chat};
 use crate::ui::horizontal_line;
 
-pub trait SaveChatHistory {
-    fn save_chat_history(&mut self) -> anyhow::Result<()>;
-}
-
-impl SaveChatHistory for Chat {
-    fn save_chat_history(&mut self) -> anyhow::Result<()> {
+impl Chat {
+    pub(crate) fn save_chat_history(&mut self) -> anyhow::Result<()> {
         self.clear_input();
         self.save_chat_history_to_file()?;
         horizontal_line();
