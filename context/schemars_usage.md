@@ -74,7 +74,7 @@ async fn definition(&self, _prompt: String) -> ToolDefinition {
 Add to `Cargo.toml`:
 ```toml
 [dependencies]
-schemars = "0.8"
+schemars = "1.2.1"
 ```
 
 ## Basic Usage

@@ -226,7 +226,7 @@ impl Tool for WebSearch {
 ## Architecture Considerations
 
 ### API Client Module
-Create `src/api/tavily.rs`:
+Create `src/agent_tools/web/tavily.rs`:
 - `TavilyClient` struct with API key
 - Methods for each endpoint (search, extract, crawl, research)
 - Error handling and response parsing
@@ -249,7 +249,7 @@ Add to `src/chat/config.rs`:
 Add to `Cargo.toml`:
 ```toml
 # Already have reqwest, serde, serde_json
-schemars = "0.8"  # For automatic JSON Schema generation from Rust structs
+schemars = "1.2.1"  # For automatic JSON Schema generation from Rust structs
 # May need:
 tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread", "time"] }
 # For polling research status
